@@ -23,11 +23,12 @@ jobs:
           password: ${{ secrets.DOCKER_PAT }}
 
       - name: Build and Push backend image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
-          file: backend.Dockerfile
+          file: Dockerfile
+          context: backend
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/score:${{ github.ref_name }} , ${{ secrets.DOCKER_USERNAME }}/score:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/cardabase-backend:${{ github.ref_name }} , ${{ secrets.DOCKER_USERNAME }}/cardabase-backend:latest
 
       - name: Create release
         uses: ncipollo/release-action@v1
