@@ -14,5 +14,5 @@ jobs:
     
     - name: Build the Docker image
       working-directory: backend
-      run: docker build . --file backend/Dockerfile
+      run: docker build . --file Dockerfile
 
