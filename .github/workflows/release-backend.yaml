@@ -1,12 +1,11 @@
 name: Release Backend
 
 on:
-  push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
   workflow_dispatch:
-  
+  push:
+    tags: 
+    - 'v*'
+
 
 jobs:
   build:
