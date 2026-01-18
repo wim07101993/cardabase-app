@@ -2,7 +2,7 @@ import 'package:cardabase/util/read_barcode.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import '../data/cardabase_db.dart';
 import '../util/camera_controller.dart';
 import '../util/dashedRect.dart';

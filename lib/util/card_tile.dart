@@ -3,7 +3,7 @@ import 'package:barcode_widget/barcode_widget.dart';
 import 'package:cardabase/pages/card_details.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'vibration_provider.dart';
 
 

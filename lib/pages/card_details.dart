@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
 import 'package:screen_brightness/screen_brightness.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'dart:io';
 
 import 'image_preview_screen.dart';

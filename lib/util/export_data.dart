@@ -1,6 +1,6 @@
 import 'package:cardabase/util/vibration_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'dart:io';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
