@@ -1,16 +1,18 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:cardabase/pages/createcardnew.dart';
 import 'package:cardabase/pages/homepage.dart';
-import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:cardabase/theme/color_schemes.g.dart';
-import 'package:flutter/services.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+import 'package:cardabase/pages/settings.dart';
 import 'package:cardabase/pages/welcome_screen.dart';
+import 'package:cardabase/theme/color_schemes.g.dart';
+import 'package:cardabase/util/export_data.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:quick_actions/quick_actions.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:cardabase/util/export_data.dart';
-import 'dart:async';
-import 'package:cardabase/pages/settings.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -79,7 +81,8 @@ void main() async {
     );
   };
 
-  await Hive.initFlutter();
+  final hiveDir = Platform.isLinux || Platform.isWindows ? 'cardabase' : null;
+  await Hive.initFlutter(hiveDir);
   await Hive.openBox('mybox'); //storage for cards
   await Hive.openBox('settingsBox'); // storage for settings
   await Hive.openBox('password'); // storage for password
