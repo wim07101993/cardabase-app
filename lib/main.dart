@@ -1,7 +1,7 @@
 import 'package:cardabase/pages/createcardnew.dart';
 import 'package:cardabase/pages/homepage.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:cardabase/theme/color_schemes.g.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';

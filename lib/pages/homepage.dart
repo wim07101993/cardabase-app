@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:cardabase/data/cardabase_db.dart';
 import 'package:cardabase/util/card_tile.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
-import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../util/vibration_provider.dart';
 import 'createcardnew.dart';
 import 'editcard.dart';
