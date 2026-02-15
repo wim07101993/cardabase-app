@@ -1,7 +1,7 @@
 import 'package:cardabase/data/cardabase_db.dart';
-import 'package:cardabase/pages/info.dart';
-import 'package:cardabase/pages/password.dart';
-import 'package:cardabase/pages/tags_page.dart';
+import 'package:cardabase/pages/info/info.dart';
+import 'package:cardabase/pages/password/password.dart';
+import 'package:cardabase/pages/tags/tags_page.dart';
 import 'package:cardabase/theme/theme_provider.dart';
 import 'package:cardabase/util/brightness_provider.dart';
 import 'package:cardabase/util/dev_options.dart';

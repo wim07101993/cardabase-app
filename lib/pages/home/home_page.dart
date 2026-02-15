@@ -1,8 +1,9 @@
 import 'package:cardabase/data/cardabase_db.dart';
-import 'package:cardabase/pages/create_card_new.dart';
-import 'package:cardabase/pages/edit_card.dart';
-import 'package:cardabase/pages/settings.dart';
-import 'package:cardabase/pages/welcome_screen.dart';
+import 'package:cardabase/pages/card_details/card_face.dart';
+import 'package:cardabase/pages/create_card_new/create_card_new.dart';
+import 'package:cardabase/pages/edit_card/edit_card.dart';
+import 'package:cardabase/pages/settings/settings.dart';
+import 'package:cardabase/pages/welcome/welcome_screen.dart';
 import 'package:cardabase/util/card_tile.dart';
 import 'package:cardabase/util/setting_tile.dart';
 import 'package:cardabase/util/vibration_provider.dart';
@@ -878,18 +879,20 @@ class _HomePageState extends State<Homepage> {
             key: ValueKey(card['uniqueId'] ?? index),
             shopName: (card['cardName'] ?? 'No Name').toString(),
             deleteFunction: (context) => askForPasswordDelete(theme, index),
-            cardnumber: card['cardId']?.toString() ?? '',
+            cardData: card['cardId']?.toString() ?? '',
             cardTileColor: Color.fromARGB(
               255,
               card['redValue'] ?? 158,
               card['greenValue'] ?? 158,
               card['blueValue'] ?? 158,
             ),
-            cardType: card['cardType'] ?? 'CardType.ean13',
+            barcodeType: parseBarcodeType(
+              card['cardType'] as String? ?? 'CardType.ean13',
+            ),
             hasPassword: card['hasPassword'] ?? false,
-            red: card['redValue'] ?? 158,
-            green: card['greenValue'] ?? 158,
-            blue: card['blueValue'] ?? 158,
+            red: card['redValue'] as int? ?? 158,
+            green: card['greenValue'] as int? ?? 158,
+            blue: card['blueValue'] as int? ?? 158,
             editFunction: (context) => editCard(context, theme, index),
             moveUpFunction: (context) => moveUp(index),
             moveDownFunction: (context) => moveDown(index),
@@ -901,9 +904,9 @@ class _HomePageState extends State<Homepage> {
             reorderMode: reorderMode,
             note: card['note'] ?? 'Card notes are displayed here...',
             uniqueId: card['uniqueId'] ?? 'Error',
-            imagePathFront: card['imagePathFront'] ?? '',
-            imagePathBack: card['imagePathBack'] ?? '',
-            useFrontFaceOverlay: card['useFrontFaceOverlay'] ?? false,
+            frontImagePath: card['imagePathFront'] ?? '',
+            backImagePath: card['imagePathBack'] ?? '',
+            useFrontFaceOverlay: card['useFrontFaceOverlay'] as bool? ?? false,
             hideTitle: card['hideTitle'] ?? false,
           );
         });
@@ -939,18 +942,17 @@ class _HomePageState extends State<Homepage> {
                       index,
                     );
                   },
-                  cardnumber: card['cardId']?.toString() ?? '',
+                  cardData: card['cardId']?.toString() ?? '',
                   cardTileColor: Color.fromARGB(
                     255,
                     card['redValue'] ?? 158,
                     card['greenValue'] ?? 158,
                     card['blueValue'] ?? 158,
                   ),
-                  cardType: card['cardType'] ?? 'CardType.ean13',
+                  barcodeType: parseBarcodeType(
+                    card['cardType'] as String? ?? 'CardType.ean13',
+                  ),
                   hasPassword: card['hasPassword'] ?? false,
-                  red: card['redValue'] ?? 158,
-                  green: card['greenValue'] ?? 158,
-                  blue: card['blueValue'] ?? 158,
                   editFunction: (context) => editCard(context, theme, index),
                   moveUpFunction: (context) => moveUp(index),
                   moveDownFunction: (context) => moveDown(index),
@@ -962,8 +964,8 @@ class _HomePageState extends State<Homepage> {
                   reorderMode: reorderMode,
                   note: card['note'] ?? 'Card notes are displayed here...',
                   uniqueId: card['uniqueId'] ?? 'Error',
-                  imagePathFront: card['imagePathFront'] ?? '',
-                  imagePathBack: card['imagePathBack'] ?? '',
+                  frontImagePath: card['imagePathFront'] ?? '',
+                  backImagePath: card['imagePathBack'] ?? '',
                   useFrontFaceOverlay: card['useFrontFaceOverlay'] ?? false,
                   hideTitle: card['hideTitle'] ?? false,
                 );
