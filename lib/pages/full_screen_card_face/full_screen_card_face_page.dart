@@ -39,10 +39,10 @@ class FullScreenCardFacePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Dark background for better visibility
+      backgroundColor: Colors.white, // White background for better visibility
       appBar: AppBar(
         backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black), // White back icon
+        iconTheme: const IconThemeData(color: Colors.black), // Black back icon
         automaticallyImplyLeading: false,
         actions: [
           IconButton(

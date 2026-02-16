@@ -88,7 +88,7 @@ class _CardTileState extends State<CardTile> {
           ? FileImage(File(widget.frontImagePath))
           : null;
     }
-    if (oldWidget.frontImagePath != widget.frontImagePath &&
+    if (oldWidget.backImagePath != widget.backImagePath &&
         widget.backImagePath.isNotEmpty) {
       backImage = widget.backImagePath.isNotEmpty
           ? FileImage(File(widget.backImagePath))

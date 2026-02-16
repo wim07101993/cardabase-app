@@ -77,7 +77,7 @@ class _CardDetailsPageState extends State<CardDetailsPage> {
         ),
         children: [
           Padding(
-            padding: const EdgeInsetsGeometry.fromLTRB(20, 0, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
             child: Text(
               widget.title,
               textAlign: TextAlign.center,
