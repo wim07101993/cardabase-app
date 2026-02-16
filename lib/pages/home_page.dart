@@ -903,7 +903,7 @@ class _HomePageState extends State<Homepage> {
             uniqueId: card['uniqueId'] ?? 'Error',
             frontImagePath: card['imagePathFront'] ?? '',
             backImagePath: card['imagePathBack'] ?? '',
-            useFrontFaceOverlay: card['useFrontFaceOverlay'] as bool? ?? false,
+            useFrontFaceOverlay: card['useFrontFaceOverlay'] ?? false,
             hideTitle: card['hideTitle'] ?? false,
           );
         });
