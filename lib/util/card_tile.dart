@@ -82,14 +82,12 @@ class _CardTileState extends State<CardTile> {
   @override
   void didUpdateWidget(covariant CardTile oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.frontImagePath != widget.frontImagePath &&
-        widget.frontImagePath.isNotEmpty) {
+    if (oldWidget.frontImagePath != widget.frontImagePath) {
       frontImage = widget.frontImagePath.isNotEmpty
           ? FileImage(File(widget.frontImagePath))
           : null;
     }
-    if (oldWidget.backImagePath != widget.backImagePath &&
-        widget.backImagePath.isNotEmpty) {
+    if (oldWidget.backImagePath != widget.backImagePath) {
       backImage = widget.backImagePath.isNotEmpty
           ? FileImage(File(widget.backImagePath))
           : null;
