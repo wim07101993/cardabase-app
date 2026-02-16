@@ -1,7 +1,7 @@
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:cardabase/pages/card_details/card_face.dart';
 import 'package:cardabase/pages/card_details/share_card_dialog.dart';
-import 'package:cardabase/pages/settings/settings.dart';
+import 'package:cardabase/pages/settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
 import 'package:screen_brightness/screen_brightness.dart';

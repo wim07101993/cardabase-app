@@ -1,9 +1,9 @@
 import 'package:cardabase/data/cardabase_db.dart';
 import 'package:cardabase/pages/card_details/card_face.dart';
-import 'package:cardabase/pages/create_card_new/create_card_new.dart';
-import 'package:cardabase/pages/edit_card/edit_card.dart';
-import 'package:cardabase/pages/settings/settings.dart';
-import 'package:cardabase/pages/welcome/welcome_screen.dart';
+import 'package:cardabase/pages/create_card_new.dart';
+import 'package:cardabase/pages/edit_card.dart';
+import 'package:cardabase/pages/settings.dart';
+import 'package:cardabase/pages/welcome_screen.dart';
 import 'package:cardabase/util/card_tile.dart';
 import 'package:cardabase/util/setting_tile.dart';
 import 'package:cardabase/util/vibration_provider.dart';
