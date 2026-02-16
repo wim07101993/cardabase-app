@@ -125,7 +125,7 @@ class _CardDetailsPageState extends State<CardDetailsPage> {
           builder: (context) => ShareCardDialog(
             // TODO(wim): extract this logic somewhere central
             data:
-                '[${widget.title}, ${widget.cardData}, ${widget.borderColor}, ${widget.borderColor.g}, ${widget.borderColor.b}, ${widget.barcodeType}, ${widget.hasPassword},${widget.tags}]',
+                '[${widget.title}, ${widget.cardData}, ${widget.borderColor.r.toInt()}, ${widget.borderColor.g.toInt()}, ${widget.borderColor.b.toInt()}, ${widget.barcodeType}, ${widget.hasPassword},${widget.tags}]',
           ),
         ),
       ),
