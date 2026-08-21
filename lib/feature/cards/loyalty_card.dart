@@ -7,6 +7,7 @@ import 'package:cardabase/feature/cards/edit/editable_loyalty_card.dart';
 import 'package:cardabase/util/barcode_type_extensions.dart';
 import 'package:cardabase/util/map_extensions.dart';
 import 'package:cardabase/util/string_extensions.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:hive_ce/hive.dart';
@@ -18,7 +19,7 @@ part 'loyalty_card.g.dart';
 typedef LoyaltyCardsBox = Box<LoyaltyCard>;
 
 @HiveType(typeId: HiveTypeIds.loyaltyCard)
-class LoyaltyCard {
+class LoyaltyCard extends Equatable {
   static const Color defaultColor = Colors.grey;
 
   const LoyaltyCard({
@@ -104,12 +105,31 @@ class LoyaltyCard {
   /// This is used by default for sorting.
   @HiveField(13)
   final DateTime lastModifiedAt;
-  
+
   /// [usePoints] whether the card uses Points amount
   @HiveField(14, defaultValue: false)
   final bool usePoints;
 
   Color get nonNullColor => color ?? defaultColor;
+
+  @override
+  List<Object?> get props => [
+        id,
+        barcode,
+        name,
+        color,
+        tags,
+        notes,
+        frontImagePath,
+        backImagePath,
+        useFrontImageOverlay,
+        points,
+        requiresAuth,
+        hideName,
+        createdAt,
+        lastModifiedAt,
+        usePoints,
+      ];
 
   EditableLoyaltyCard editable() => EditableLoyaltyCard.fromValue(this);
 
@@ -184,7 +204,7 @@ class LoyaltyCard {
       }
 
       if (cardMap.isNotEmpty) {
-        final strType = cardMap['cardType'];
+        final strType = cardMap.getString('cardType')?.nullWhenEmpty;
 
         final red = cardMap.getInt('redValue');
         final green = cardMap.getInt('greenValue');
@@ -196,7 +216,8 @@ class LoyaltyCard {
           id: generateUniqueId(),
           barcode: Barcode(
             data: cardMap['cardId'] ?? '',
-            type: parseBarcodeTypeStringFromDb(strType),
+            type:
+                strType == null ? null : parseBarcodeTypeStringFromDb(strType),
           ),
           name: cardMap['cardName'] ?? '',
           color: red == null || green == null || blue == null
@@ -235,10 +256,7 @@ class LoyaltyCard {
         name: rawList[0],
         barcode: Barcode(
           data: rawList[1],
-          type: BarcodeType.values.firstWhere(
-            (value) => value.name == rawList[5],
-            orElse: () => throw Exception('unknown barcodeType: ${rawList[5]}'),
-          ),
+          type: parseBarcodeTypeStringFromDb(rawList[5]),
         ),
         color: Color.fromARGB(255, red, green, blue),
         requiresAuth: rawList[6] == 'true',
@@ -287,7 +305,8 @@ class LoyaltyCard {
       createdAt: now,
       lastModifiedAt: now,
       usePoints: jsonMap.getBool('usePoints') ??
-          (jsonMap.containsKey('points') || jsonMap.containsKey('pointsAmount')),
+          (jsonMap.containsKey('points') ||
+              jsonMap.containsKey('pointsAmount')),
     );
   }
 
@@ -373,7 +392,7 @@ class LoyaltyCard {
 }
 
 @HiveType(typeId: HiveTypeIds.barcode)
-class Barcode {
+class Barcode extends Equatable {
   const Barcode({
     required this.data,
     required this.type,
@@ -383,6 +402,9 @@ class Barcode {
   final String data;
   @HiveField(1)
   final BarcodeType? type;
+
+  @override
+  List<Object?> get props => [data, type];
 
   EditableBarcode editable() => EditableBarcode.fromValue(this);
 
