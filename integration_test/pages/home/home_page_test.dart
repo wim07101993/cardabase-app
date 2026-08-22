@@ -6,11 +6,13 @@ import 'package:integration_test/integration_test.dart';
 import '../../../test/test_helpers/app.dart';
 import '../../../test/test_helpers/fakers/faker.dart';
 import '../../../test/test_helpers/fakers/loyalty_card.dart';
-import '../../../test/test_helpers/hive.dart';
 import '../../../test/test_helpers/fakers/settings.dart';
+import '../../../test/test_helpers/hive.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  final validEan13 = testFaker.loyaltyCards.codeEAN13();
 
   group('the card list', () {
     useApp();
@@ -26,8 +28,8 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards.card(name: 'Delhaize'),
-          testFaker.loyaltyCards.card(name: 'Colruyt'),
+          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
+          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt'),
         ],
       );
 
@@ -76,7 +78,9 @@ void main() {
     testWidgets('duplicates a card, copy and all', (tester) async {
       await startApp(
         tester,
-        cards: [testFaker.loyaltyCards.card(name: 'Delhaize')],
+        cards: [
+          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
+        ],
       );
 
       await openCardMenu(tester, 'Delhaize');
@@ -99,8 +103,10 @@ void main() {
     testWidgets('moves a card down the order of the user', (tester) async {
       // moving cards around is only offered while the user sorts them
       // themselves, and it is that order which is changed.
-      final first = testFaker.loyaltyCards.card(name: 'Delhaize');
-      final second = testFaker.loyaltyCards.card(name: 'Colruyt');
+      final first =
+          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize');
+      final second =
+          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt');
       await startApp(
         tester,
         cards: [first, second],
@@ -122,8 +128,10 @@ void main() {
     });
 
     testWidgets('moves a card up the order of the user', (tester) async {
-      final first = testFaker.loyaltyCards.card(name: 'Delhaize');
-      final second = testFaker.loyaltyCards.card(name: 'Colruyt');
+      final first =
+          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize');
+      final second =
+          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt');
       await startApp(
         tester,
         cards: [first, second],
@@ -149,8 +157,8 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards.card(name: 'Delhaize'),
-          testFaker.loyaltyCards.card(name: 'Colruyt'),
+          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
+          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt'),
         ],
       );
 
@@ -168,7 +176,9 @@ void main() {
     testWidgets('opens the card in the edit form', (tester) async {
       await startApp(
         tester,
-        cards: [testFaker.loyaltyCards.card(name: 'Delhaize')],
+        cards: [
+          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
+        ],
       );
 
       await openCardMenu(tester, 'Delhaize');
@@ -182,14 +192,14 @@ void main() {
     useApp();
 
     testWidgets('sort the cards by name', (tester) async {
-      final delhaize = testFaker.loyaltyCards.card(
-        name: 'Delhaize',
-        lastModifiedAt: DateTime.utc(2024, 1, 1, 12),
-      );
-      final colruyt = testFaker.loyaltyCards.card(
-        name: 'Colruyt',
-        lastModifiedAt: DateTime.utc(2024, 1, 1, 12, 1),
-      );
+      final delhaize = testFaker.loyaltyCards.simpleCard().copyWith(
+            name: 'Delhaize',
+            lastModifiedAt: DateTime.utc(2024, 1, 1, 12),
+          );
+      final colruyt = testFaker.loyaltyCards.simpleCard().copyWith(
+            name: 'Colruyt',
+            lastModifiedAt: DateTime.utc(2024, 1, 1, 12, 1),
+          );
       await startApp(
         tester,
         cards: [delhaize, colruyt],
@@ -221,7 +231,9 @@ void main() {
         (tester) async {
       await startApp(
         tester,
-        cards: [testFaker.loyaltyCards.card(name: 'Delhaize')],
+        cards: [
+          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
+        ],
       );
 
       await tapAndSettle(tester, find.byIcon(Icons.sort));

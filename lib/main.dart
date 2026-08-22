@@ -1,7 +1,10 @@
 import 'dart:async';
+
 import 'package:cardabase/data/unique_id.dart';
 import 'package:cardabase/feature/cards/edit/widgets/edit_card_page.dart';
 import 'package:cardabase/feature/cards/loyalty_card.dart';
+import 'package:cardabase/feature/errors/flutter_errors.dart';
+import 'package:cardabase/feature/errors/widgets/error_widget.dart' as err;
 import 'package:cardabase/feature/settings/auto_update.dart';
 import 'package:cardabase/feature/settings/get_it.dart';
 import 'package:cardabase/feature/settings/model.dart';
@@ -19,96 +22,36 @@ import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:quick_actions/quick_actions.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'feature/cards/get_it.dart';
 import 'feature/cards/import_export/import_cards.dart';
+import 'feature/errors/widgets/startup_error.dart';
 import 'util/widgets/custom_snack_bar.dart';
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-Future<void> _launchUrl(Uri url) async {
-  if (!await launchUrl(url)) {
-    throw Exception('Could not launch $url');
-  }
-}
+final navigatorKey = GlobalKey<NavigatorState>();
+final flutterErrorHandler = FlutterErrorHandler(navigatorKey: navigatorKey);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  registerDependencies();
+  return run();
+}
 
-  FlutterError.onError = (FlutterErrorDetails details) {
-    FlutterError.presentError(details);
-    if (navigatorKey.currentState != null &&
-        navigatorKey.currentContext != null &&
-        navigatorKey.currentContext!.mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (navigatorKey.currentContext != null &&
-            navigatorKey.currentContext!.mounted) {
-          bool isDialogOpen = false;
-          navigatorKey.currentState!.popUntil((route) {
-            if (route is PopupRoute && route.isActive) {
-              isDialogOpen = true;
-              return false;
-            }
-            return true;
-          });
-          if (isDialogOpen) return;
+void registerDependencies() {
+  GetIt.I
+    ..registerPackageInfo()
+    ..registerHaptics()
+    ..registerHive()
+    ..registerSettings()
+    ..registerCards();
+}
 
-          showDialog(
-            context: navigatorKey.currentContext!,
-            builder: (dialogContext) {
-              return AlertDialog(
-                title: const Text(
-                  'Application Error',
-                  style: TextStyle(color: Colors.red),
-                ),
-                content: Text(
-                  'Oops! Something critical went wrong:\n\n${details.exception}\n\n'
-                  'Please send a screenshot of this error to the developer.\n',
-                  textAlign: TextAlign.center,
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => _launchUrl(
-                      Uri.parse(
-                        'https://github.com/GeorgeYT9769/cardabase-app/issues',
-                      ),
-                    ),
-                    child: const Text('GitHub Issue'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(dialogContext).pop();
-                    },
-                    child: const Text('OK'),
-                  ),
-                ],
-              );
-            },
-          );
-        }
-      });
-    }
-  };
-
-  ErrorWidget.builder = (FlutterErrorDetails details) {
-    return Center(
-      child: Text(
-        'Oops! Something went wrong:\n${details.exception}\nPlease send a screenshot of this error to the developer.',
-        style: const TextStyle(color: Colors.red, fontSize: 18),
-        textAlign: TextAlign.center,
-      ),
-    );
-  };
+Future<void> run() async {
+  FlutterError.onError = flutterErrorHandler.handleError;
+  ErrorWidget.builder =
+      (details) => Center(child: err.ErrorWidget(error: details));
 
   try {
-    GetIt.I
-      ..registerPackageInfo()
-      ..registerHaptics()
-      ..registerHive()
-      ..registerSettings()
-      ..registerCards();
-
     // ignore: avoid_print
     print('main: awaiting packageInfo');
     final packageInfo = await GetIt.I.getAsync<PackageInfo>();
@@ -117,48 +60,43 @@ void main() async {
 
     // ignore: avoid_print
     print('main: awaiting settingsBox');
-    final settingsBox = await GetIt.I
-        .getAsync<SettingsBox>()
-        .timeout(
-          const Duration(seconds: 12),
-          onTimeout: () async {
-            // ignore: avoid_print
-            print('main: settingsBox timeout, opening settings202603 directly');
-            final hive = await GetIt.I.getAsync<HiveInterface>();
-            return hive.openBox<Settings>('settings202603');
-          },
-        );
+    final settingsBox = await GetIt.I.getAsync<SettingsBox>().timeout(
+      const Duration(seconds: 12),
+      onTimeout: () async {
+        // ignore: avoid_print
+        print('main: settingsBox timeout, opening settings202603 directly');
+        final hive = await GetIt.I.getAsync<HiveInterface>();
+        return hive.openBox<Settings>('settings202603');
+      },
+    );
     // ignore: avoid_print
     print('main: got settingsBox');
 
     // ignore: avoid_print
     print('main: awaiting cardsBox');
-    final cardsBox = await GetIt.I
-        .getAsync<LoyaltyCardsBox>()
-        .timeout(
-          const Duration(seconds: 12),
-          onTimeout: () async {
-            // ignore: avoid_print
-            print('main: cardsBox timeout, opening cards202603 directly');
-            return Hive.openBox<LoyaltyCard>('cards202603');
-          },
-        );
+    final cardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>().timeout(
+      const Duration(seconds: 12),
+      onTimeout: () async {
+        // ignore: avoid_print
+        print('main: cardsBox timeout, opening cards202603 directly');
+        return Hive.openBox<LoyaltyCard>('cards202603');
+      },
+    );
     // ignore: avoid_print
     print('main: got cardsBox (length=${cardsBox.length})');
 
     // ignore: avoid_print
     print('main: awaiting passwordBox');
-    final passwordBox = await GetIt.I
-        .getAsync<Box>(instanceName: 'passwordBox')
-        .timeout(
-          const Duration(seconds: 12),
-          onTimeout: () async {
-            // ignore: avoid_print
-            print('main: passwordBox timeout, opening password directly');
-            final hive = await GetIt.I.getAsync<HiveInterface>();
-            return hive.openBox('password');
-          },
-        );
+    final passwordBox =
+        await GetIt.I.getAsync<Box>(instanceName: 'passwordBox').timeout(
+      const Duration(seconds: 12),
+      onTimeout: () async {
+        // ignore: avoid_print
+        print('main: passwordBox timeout, opening password directly');
+        final hive = await GetIt.I.getAsync<HiveInterface>();
+        return hive.openBox('password');
+      },
+    );
     // ignore: avoid_print
     print('main: got passwordBox');
 
@@ -198,34 +136,7 @@ void main() async {
     // As a last resort, show a visible startup error instead of a black screen.
     // ignore: avoid_print
     print('main: fatal startup error: $e\n$s');
-    runApp(StartupErrorApp(errorMessage: e.toString()));
-  }
-}
-
-class StartupErrorApp extends StatelessWidget {
-  final String errorMessage;
-
-  const StartupErrorApp({
-    super.key,
-    required this.errorMessage,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: Center(
-          child: Padding(
-            padding: EdgeInsets.all(24),
-            child: Text(
-              'Cardabase failed to initialize local data.\n\nError:\n$errorMessage\n\nPlease restart the app. If this keeps happening, export your data from the old version and reinstall.',
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
-      ),
-    );
+    runApp(StartupError(error: e));
   }
 }
 
@@ -243,12 +154,12 @@ class _MainState extends State<Main> {
   String shortcut = 'nothing set';
   late StreamSubscription _intentDataStreamSubscription;
 
-
   @override
   void initState() {
     super.initState();
 
-    _intentDataStreamSubscription = ReceiveSharingIntent.instance.getMediaStream().listen((value) {
+    _intentDataStreamSubscription =
+        ReceiveSharingIntent.instance.getMediaStream().listen((value) {
       _handleSharedMedia(value);
     });
 
@@ -349,7 +260,8 @@ class _MainState extends State<Main> {
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: const Text('Import CDB File?'),
-          content: const Text('This will overwrite your current cards and settings.'),
+          content: const Text(
+              'This will overwrite your current cards and settings.'),
           actions: [
             _cancelButton(dialogContext, Theme.of(dialogContext)),
             _importButton(dialogContext, Theme.of(dialogContext)),
@@ -366,7 +278,9 @@ class _MainState extends State<Main> {
           if (importResult.cards.isNotEmpty) {
             await cardsBox.clear();
             await cardsBox.putAll(
-              importResult.cards.asMap().map((_, value) => MapEntry(value.id, value)),
+              importResult.cards
+                  .asMap()
+                  .map((_, value) => MapEntry(value.id, value)),
             );
           }
 

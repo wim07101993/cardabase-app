@@ -11,6 +11,8 @@ import '../../../test/test_helpers/hive.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  final validEan13 = testFaker.loyaltyCards.codeEAN13();
+
   Future<void> openNewCardForm(WidgetTester tester) async {
     await startApp(tester);
     await tapAndSettle(tester, find.byIcon(Icons.add_card));
@@ -135,11 +137,11 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards.card(
-            id: 'card-under-test',
-            name: 'Delhaize',
-            barcodeData: validEan13,
-          ),
+          testFaker.loyaltyCards.simpleCard().copyWith(
+                id: 'card-under-test',
+                name: 'Delhaize',
+                barcode: Barcode(data: validEan13, type: BarcodeType.CodeEAN13),
+              ),
         ],
       );
 
@@ -161,14 +163,13 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards.card(
-            name: 'Delhaize',
-            barcodeData: validEan13,
-            barcodeType: BarcodeType.CodeEAN8,
-            notes: 'The one on the corner',
-            points: 12,
-            usePoints: true,
-          ),
+          testFaker.loyaltyCards.simpleCard().copyWith(
+                name: 'Delhaize',
+                notes: 'The one on the corner',
+                points: 12,
+                usePoints: true,
+                barcode: Barcode(data: validEan13, type: BarcodeType.CodeEAN8),
+              ),
         ],
       );
 
@@ -183,7 +184,9 @@ void main() {
     testWidgets('leaves the card alone when the form is left', (tester) async {
       await startApp(
         tester,
-        cards: [testFaker.loyaltyCards.card(name: 'Delhaize')],
+        cards: [
+          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
+        ],
       );
 
       await openCardMenu(tester, 'Delhaize');

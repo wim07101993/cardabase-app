@@ -81,7 +81,13 @@ Future<void> scrollTo(
     await tester.pumpAndSettle();
   }
 
-  await tester.scrollUntilVisible(finder, 200, scrollable: list);
+  try {
+    await tester.scrollUntilVisible(finder, 200, scrollable: list);
+  } on StateError {
+    // `scrollUntilVisible` gives up with a bare "Bad state: No element", which
+    // says nothing about what was being looked for.
+    fail('scrolled the whole list without finding $finder');
+  }
   await tester.ensureVisible(finder);
   await tester.pumpAndSettle();
 }

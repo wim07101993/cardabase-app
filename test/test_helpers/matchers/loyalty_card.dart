@@ -87,25 +87,40 @@ class _LoyaltyCardMatcher extends Matcher {
       if (notes != null) _FieldMatcher('notes', (card) => card.notes, notes),
       if (frontImagePath != null)
         _FieldMatcher(
-            'frontImagePath', (card) => card.frontImagePath, frontImagePath),
+          'frontImagePath',
+          (card) => card.frontImagePath,
+          frontImagePath,
+        ),
       if (backImagePath != null)
         _FieldMatcher(
-            'backImagePath', (card) => card.backImagePath, backImagePath),
+          'backImagePath',
+          (card) => card.backImagePath,
+          backImagePath,
+        ),
       if (useFrontImageOverlay != null)
-        _FieldMatcher('useFrontImageOverlay',
-            (card) => card.useFrontImageOverlay, useFrontImageOverlay),
+        _FieldMatcher(
+          'useFrontImageOverlay',
+          (card) => card.useFrontImageOverlay,
+          useFrontImageOverlay,
+        ),
       if (points != null)
         _FieldMatcher('points', (card) => card.points, points),
       if (requiresAuth != null)
         _FieldMatcher(
-            'requiresAuth', (card) => card.requiresAuth, requiresAuth),
+          'requiresAuth',
+          (card) => card.requiresAuth,
+          requiresAuth,
+        ),
       if (hideName != null)
         _FieldMatcher('hideName', (card) => card.hideName, hideName),
       if (createdAt != null)
         _FieldMatcher('createdAt', (card) => card.createdAt, createdAt),
       if (lastModifiedAt != null)
         _FieldMatcher(
-            'lastModifiedAt', (card) => card.lastModifiedAt, lastModifiedAt),
+          'lastModifiedAt',
+          (card) => card.lastModifiedAt,
+          lastModifiedAt,
+        ),
       if (usePoints != null)
         _FieldMatcher('usePoints', (card) => card.usePoints, usePoints),
     ];

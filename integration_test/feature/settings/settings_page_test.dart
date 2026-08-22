@@ -6,24 +6,24 @@ import 'package:integration_test/integration_test.dart';
 import '../../../test/test_helpers/app.dart';
 import '../../../test/test_helpers/fakers/faker.dart';
 import '../../../test/test_helpers/fakers/loyalty_card.dart';
+import '../../../test/test_helpers/fakers/settings.dart';
 import '../../../test/test_helpers/hive.dart';
 import '../../../test/test_helpers/plugins.dart';
-import '../../../test/test_helpers/fakers/settings.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  final validEan13 = testFaker.loyaltyCards.codeEAN13();
+  final otherValidEan13 = testFaker.loyaltyCards.codeEAN13();
+
   group('the settings', () {
     useApp();
 
-    /// Scrolls a setting into view and taps it. The settings have to be open
-    /// already.
     Future<void> tapSetting(WidgetTester tester, String setting) async {
       await scrollTo(tester, find.text(setting));
       await tapAndSettle(tester, find.text(setting));
     }
 
-    /// Opens the settings from the card list and taps a setting.
     Future<void> openSetting(WidgetTester tester, String setting) async {
       await tapAndSettle(tester, find.byIcon(Icons.settings));
       await tapSetting(tester, setting);
@@ -43,8 +43,10 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards
-              .card(name: 'Delhaize', barcodeData: validEan13),
+          testFaker.loyaltyCards.simpleCard().copyWith(
+                name: 'Delhaize',
+                barcode: Barcode(data: validEan13, type: BarcodeType.CodeEAN13),
+              ),
         ],
       );
 
@@ -61,8 +63,12 @@ void main() {
       await openSetting(tester, 'Import Cardabase');
       await tester.enterText(
         find.byType(TextField).last,
-        [testFaker.loyaltyCards.card(name: 'Delhaize', barcodeData: validEan13)]
-            .serializeToJson(),
+        [
+          testFaker.loyaltyCards.simpleCard().copyWith(
+                name: 'Delhaize',
+                barcode: Barcode(data: validEan13, type: BarcodeType.CodeEAN13),
+              ),
+        ].serializeToJson(),
       );
       await tapAndSettle(tester, find.text('Import'));
 
@@ -78,10 +84,15 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards
-              .card(name: 'Delhaize', barcodeData: validEan13),
-          testFaker.loyaltyCards
-              .card(name: 'Colruyt', barcodeData: otherValidEan13),
+          testFaker.loyaltyCards.simpleCard().copyWith(
+                name: 'Delhaize',
+                barcode: Barcode(data: validEan13, type: BarcodeType.CodeEAN13),
+              ),
+          testFaker.loyaltyCards.simpleCard().copyWith(
+                name: 'Colruyt',
+                barcode:
+                    Barcode(data: otherValidEan13, type: BarcodeType.CodeEAN13),
+              ),
         ],
       );
 
@@ -107,7 +118,9 @@ void main() {
     testWidgets('adding a tag makes it available on a card', (tester) async {
       await startApp(
         tester,
-        cards: [testFaker.loyaltyCards.card(name: 'Delhaize')],
+        cards: [
+          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
+        ],
       );
 
       await openSetting(tester, 'Tags');

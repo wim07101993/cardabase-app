@@ -11,11 +11,11 @@ void main() {
     List<LoyaltyCard> cardsNamed(List<String> names) {
       return [
         for (final (index, name) in names.indexed)
-          testFaker.loyaltyCards.card(
-            id: 'card-$index',
-            name: name,
-            lastModifiedAt: DateTime.utc(2024, 1, 1, 12, index),
-          ),
+          testFaker.loyaltyCards.card().copyWith(
+                id: 'card-$index',
+                name: name,
+                lastModifiedAt: DateTime.utc(2024, 1, 1, 12, index),
+              ),
       ];
     }
 
@@ -107,11 +107,14 @@ void main() {
       List<LoyaltyCard> agedCards() {
         return [
           testFaker.loyaltyCards
-              .card(name: 'Older', lastModifiedAt: DateTime.utc(2024)),
+              .card()
+              .copyWith(name: 'Older', lastModifiedAt: DateTime.utc(2024)),
           testFaker.loyaltyCards
-              .card(name: 'Newest', lastModifiedAt: DateTime.utc(2025)),
+              .card()
+              .copyWith(name: 'Newest', lastModifiedAt: DateTime.utc(2025)),
           testFaker.loyaltyCards
-              .card(name: 'Oldest', lastModifiedAt: DateTime.utc(2023)),
+              .card()
+              .copyWith(name: 'Oldest', lastModifiedAt: DateTime.utc(2023)),
         ];
       }
 

@@ -6,11 +6,13 @@ import 'package:integration_test/integration_test.dart';
 import '../test/test_helpers/app.dart';
 import '../test/test_helpers/fakers/faker.dart';
 import '../test/test_helpers/fakers/loyalty_card.dart';
-import '../test/test_helpers/hive.dart';
 import '../test/test_helpers/fakers/settings.dart';
+import '../test/test_helpers/hive.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  final validEan13 = testFaker.loyaltyCards.codeEAN13();
 
   group('starting the app', () {
     useApp();
@@ -18,7 +20,9 @@ void main() {
     testWidgets('opens on the cards of the user', (tester) async {
       await startApp(
         tester,
-        cards: [testFaker.loyaltyCards.card(name: 'Delhaize')],
+        cards: [
+          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
+        ],
       );
 
       expect(find.text('Cardabase'), findsOneWidget);

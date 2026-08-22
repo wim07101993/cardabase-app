@@ -9,6 +9,9 @@ import '../../test_helpers/fakers/loyalty_card.dart';
 import '../../test_helpers/hive.dart';
 
 void main() {
+  final validEan13 = testFaker.loyaltyCards.codeEAN13();
+  final otherValidEan13 = testFaker.loyaltyCards.codeEAN13();
+
   group('migrateCardsBoxTo202603', () {
     useHive();
 
@@ -25,7 +28,7 @@ void main() {
     /// A card the way the old app wrote it: a map of loose values.
     Map<String, dynamic> legacyCard({
       String name = 'Delhaize',
-      String data = validEan13,
+      String? data,
       String? cardType = 'CardType.ean13',
       int? red = 1,
       int? green = 2,
@@ -38,7 +41,7 @@ void main() {
     }) {
       return {
         'cardName': name,
-        'cardId': data,
+        'cardId': data ?? validEan13,
         if (cardType != null) 'cardType': cardType,
         if (red != null) 'redValue': red,
         if (green != null) 'greenValue': green,
@@ -116,7 +119,9 @@ void main() {
     });
 
     test('leaves the cards alone when there are already new ones', () async {
-      await storeCards([testFaker.loyaltyCards.card(name: 'Already migrated')]);
+      await storeCards([
+        testFaker.loyaltyCards.card().copyWith(name: 'Already migrated'),
+      ]);
       await oldBox.put('CARDLIST', [legacyCard(name: 'Delhaize')]);
 
       await migrateCardsBoxTo202603(oldBox, cardsBox());

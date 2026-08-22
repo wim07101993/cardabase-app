@@ -131,6 +131,29 @@ class LoyaltyCardFaker {
 
   String _withGs1CheckDigit(String digits) => '$digits${gs1CheckDigit(digits)}';
 
+  /// A card without any of the extras: no pictures, no password, its name on
+  /// the front and no points.
+  LoyaltyCard simpleCard() {
+    final faked = card();
+    return LoyaltyCard(
+      id: faked.id,
+      barcode: faked.barcode,
+      name: faked.name,
+      color: faked.color,
+      tags: faked.tags,
+      notes: faked.notes,
+      frontImagePath: null,
+      backImagePath: null,
+      useFrontImageOverlay: false,
+      points: 0,
+      requiresAuth: false,
+      hideName: false,
+      createdAt: faked.createdAt,
+      lastModifiedAt: faked.lastModifiedAt,
+      usePoints: false,
+    );
+  }
+
   LoyaltyCard card() {
     return LoyaltyCard(
       id: cardId(),
