@@ -50,6 +50,7 @@ Future<void> resetHive({
   List<LoyaltyCard> cards = const [],
   Settings? settings,
   String? password,
+  bool lockApp = false,
 }) async {
   final box = cardsBox();
   await box.clear();
@@ -58,7 +59,8 @@ Future<void> resetHive({
   final passwords = Hive.box(passwordBoxName);
   await passwords.clear();
   if (password != null) {
-    await passwords.put('password', password);
+    await passwords.put('PW', password);
+    await passwords.put('lock_app', lockApp);
   }
 
   final settings0 = Hive.box<Settings>(settingsBoxName);

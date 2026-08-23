@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cardabase/data/unique_id.dart';
 import 'package:cardabase/feature/cards/edit/widgets/edit_card_page.dart';
 import 'package:cardabase/feature/cards/loyalty_card.dart';
+import 'package:cardabase/feature/cards/migrations.dart';
 import 'package:cardabase/feature/errors/flutter_errors.dart';
 import 'package:cardabase/feature/errors/widgets/error_widget.dart' as err;
 import 'package:cardabase/feature/settings/auto_update.dart';
@@ -84,6 +85,14 @@ Future<void> run() async {
     );
     // ignore: avoid_print
     print('main: got cardsBox (length=${cardsBox.length})');
+
+    // Run migration in background so we don't block app startup.
+    print('registerCards: background migration start');
+    runLoyaltyCardMigrations()
+        .then((_) => print('registerCards: background migration finished'))
+        .onError(
+          (e, s) => print('registerCards: background migration failed: $e\n$s'),
+        );
 
     // ignore: avoid_print
     print('main: awaiting passwordBox');

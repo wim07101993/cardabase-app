@@ -1,16 +1,16 @@
 import 'package:cardabase/feature/cards/loyalty_card.dart';
 import 'package:cardabase/feature/cards/migrations.dart';
+import 'package:faker/faker.dart' hide Color;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
-import '../../test_helpers/fakers/faker.dart';
-import '../../test_helpers/fakers/loyalty_card.dart';
-import '../../test_helpers/hive.dart';
+import '../../../test_helpers/fakers/loyalty_card.dart';
+import '../../../test_helpers/hive.dart';
 
 void main() {
-  final validEan13 = testFaker.loyaltyCards.codeEAN13();
-  final otherValidEan13 = testFaker.loyaltyCards.codeEAN13();
+  final validEan13 = faker.loyaltyCards.codeEAN13();
+  final otherValidEan13 = faker.loyaltyCards.codeEAN13();
 
   group('migrateCardsBoxTo202603', () {
     useHive();
@@ -120,7 +120,7 @@ void main() {
 
     test('leaves the cards alone when there are already new ones', () async {
       await storeCards([
-        testFaker.loyaltyCards.card().copyWith(name: 'Already migrated'),
+        faker.loyaltyCards.card().copyWith(name: 'Already migrated'),
       ]);
       await oldBox.put('CARDLIST', [legacyCard(name: 'Delhaize')]);
 

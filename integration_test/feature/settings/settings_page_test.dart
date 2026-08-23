@@ -1,20 +1,24 @@
 import 'package:cardabase/feature/cards/loyalty_card.dart';
+import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:integration_test/integration_test.dart';
 
-import '../../../test/test_helpers/app.dart';
-import '../../../test/test_helpers/fakers/faker.dart';
-import '../../../test/test_helpers/fakers/loyalty_card.dart';
-import '../../../test/test_helpers/fakers/settings.dart';
-import '../../../test/test_helpers/hive.dart';
-import '../../../test/test_helpers/plugins.dart';
+import '../../../test_helpers/fakers/loyalty_card.dart';
+import '../../../test_helpers/fakers/settings.dart';
+import '../../../test_helpers/hive.dart';
+import '../../../test_helpers/mocks/plugins/clipboard.dart';
+import '../../test_helpers/app.dart';
+
+/// What the app last copied to the clipboard, as the fake platform saw it.
+String? get clipboardText => GetIt.I<MockClipboardPlatform>().clipboardText;
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  final validEan13 = testFaker.loyaltyCards.codeEAN13();
-  final otherValidEan13 = testFaker.loyaltyCards.codeEAN13();
+  final validEan13 = faker.loyaltyCards.codeEAN13();
+  final otherValidEan13 = faker.loyaltyCards.codeEAN13();
 
   group('the settings', () {
     useApp();
@@ -43,7 +47,7 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards.simpleCard().copyWith(
+          faker.loyaltyCards.simpleCard().copyWith(
                 name: 'Delhaize',
                 barcode: Barcode(data: validEan13, type: BarcodeType.CodeEAN13),
               ),
@@ -64,7 +68,7 @@ void main() {
       await tester.enterText(
         find.byType(TextField).last,
         [
-          testFaker.loyaltyCards.simpleCard().copyWith(
+          faker.loyaltyCards.simpleCard().copyWith(
                 name: 'Delhaize',
                 barcode: Barcode(data: validEan13, type: BarcodeType.CodeEAN13),
               ),
@@ -84,11 +88,11 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards.simpleCard().copyWith(
+          faker.loyaltyCards.simpleCard().copyWith(
                 name: 'Delhaize',
                 barcode: Barcode(data: validEan13, type: BarcodeType.CodeEAN13),
               ),
-          testFaker.loyaltyCards.simpleCard().copyWith(
+          faker.loyaltyCards.simpleCard().copyWith(
                 name: 'Colruyt',
                 barcode:
                     Barcode(data: otherValidEan13, type: BarcodeType.CodeEAN13),
@@ -119,7 +123,7 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
+          faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
         ],
       );
 
@@ -132,7 +136,7 @@ void main() {
     });
 
     testWidgets('switching the theme is remembered', (tester) async {
-      await startApp(tester, settings: testFaker.settings.settings());
+      await startApp(tester, settings: faker.settings.settings());
       expect(storedSettings().theme.useDarkMode, isFalse);
 
       await tapAndSettle(tester, find.byIcon(Icons.settings));

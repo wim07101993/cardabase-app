@@ -1,17 +1,17 @@
 import 'package:cardabase/feature/cards/card_list_view_options.dart';
 import 'package:cardabase/feature/cards/loyalty_card.dart';
+import 'package:faker/faker.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../test_helpers/fakers/faker.dart';
-import '../../test_helpers/fakers/loyalty_card.dart';
-import '../../test_helpers/fakers/settings.dart';
+import '../../../test_helpers/fakers/loyalty_card.dart';
+import '../../../test_helpers/fakers/settings.dart';
 
 void main() {
   group('CardListViewOptions.sortCards', () {
     List<LoyaltyCard> cardsNamed(List<String> names) {
       return [
         for (final (index, name) in names.indexed)
-          testFaker.loyaltyCards.card().copyWith(
+          faker.loyaltyCards.card().copyWith(
                 id: 'card-$index',
                 name: name,
                 lastModifiedAt: DateTime.utc(2024, 1, 1, 12, index),
@@ -27,7 +27,7 @@ void main() {
       test('sorts from a to z', () {
         final cards = cardsNamed(['Carrefour', 'Aldi', 'Delhaize']);
 
-        testFaker.settings
+        faker.settings
             .cardListViewOptions(sortingStyle: SortingStyle.nameAz)
             .sortCards(cards);
 
@@ -37,7 +37,7 @@ void main() {
       test('sorts from z to a', () {
         final cards = cardsNamed(['Carrefour', 'Aldi', 'Delhaize']);
 
-        testFaker.settings
+        faker.settings
             .cardListViewOptions(sortingStyle: SortingStyle.nameZa)
             .sortCards(cards);
 
@@ -47,7 +47,7 @@ void main() {
       test('puts capitals first unless it is told to ignore case', () {
         final cards = cardsNamed(['aldi', 'Zeeman']);
 
-        testFaker.settings
+        faker.settings
             .cardListViewOptions(sortingStyle: SortingStyle.nameAz)
             .sortCards(cards);
 
@@ -61,7 +61,7 @@ void main() {
       test('ignores case when it is told to', () {
         final cards = cardsNamed(['aldi', 'Zeeman']);
 
-        testFaker.settings
+        faker.settings
             .cardListViewOptions(
               sortingStyle: SortingStyle.nameAz,
               sortNameCaseInsensitive: true,
@@ -74,7 +74,7 @@ void main() {
       test('folds accents when it is told to', () {
         final cards = cardsNamed(['Étoile', 'Delhaize', 'Fnac']);
 
-        testFaker.settings
+        faker.settings
             .cardListViewOptions(
               sortingStyle: SortingStyle.nameAz,
               sortNameIgnoreAccents: true,
@@ -91,7 +91,7 @@ void main() {
       test('folds accents and case together', () {
         final cards = cardsNamed(['étoile', 'Delhaize', 'Fnac']);
 
-        testFaker.settings
+        faker.settings
             .cardListViewOptions(
               sortingStyle: SortingStyle.nameAz,
               sortNameIgnoreAccents: true,
@@ -106,13 +106,13 @@ void main() {
     group('by age', () {
       List<LoyaltyCard> agedCards() {
         return [
-          testFaker.loyaltyCards
+          faker.loyaltyCards
               .card()
               .copyWith(name: 'Older', lastModifiedAt: DateTime.utc(2024)),
-          testFaker.loyaltyCards
+          faker.loyaltyCards
               .card()
               .copyWith(name: 'Newest', lastModifiedAt: DateTime.utc(2025)),
-          testFaker.loyaltyCards
+          faker.loyaltyCards
               .card()
               .copyWith(name: 'Oldest', lastModifiedAt: DateTime.utc(2023)),
         ];
@@ -121,7 +121,7 @@ void main() {
       test('puts the card which changed last first', () {
         final cards = agedCards();
 
-        testFaker.settings
+        faker.settings
             .cardListViewOptions(sortingStyle: SortingStyle.latest)
             .sortCards(cards);
 
@@ -131,7 +131,7 @@ void main() {
       test('puts the card which changed first first', () {
         final cards = agedCards();
 
-        testFaker.settings
+        faker.settings
             .cardListViewOptions(sortingStyle: SortingStyle.oldest)
             .sortCards(cards);
 
@@ -143,7 +143,7 @@ void main() {
       test('follows the custom order', () {
         final cards = cardsNamed(['Aldi', 'Delhaize', 'Colruyt']);
 
-        testFaker.settings.cardListViewOptions(
+        faker.settings.cardListViewOptions(
           sortingStyle: SortingStyle.custom,
           customOrder: ['card-2', 'card-0', 'card-1'],
         ).sortCards(cards);
@@ -154,7 +154,7 @@ void main() {
       test('puts a card which is not in the order at the end', () {
         final cards = cardsNamed(['Aldi', 'Delhaize', 'Colruyt']);
 
-        testFaker.settings.cardListViewOptions(
+        faker.settings.cardListViewOptions(
           sortingStyle: SortingStyle.custom,
           customOrder: ['card-2'],
         ).sortCards(cards);
@@ -166,7 +166,7 @@ void main() {
       test('leaves the cards alone without an order to follow', () {
         final cards = cardsNamed(['Aldi', 'Delhaize', 'Colruyt']);
 
-        testFaker.settings
+        faker.settings
             .cardListViewOptions(sortingStyle: SortingStyle.custom)
             .sortCards(cards);
 
@@ -178,7 +178,7 @@ void main() {
       final one = cardsNamed(['Aldi']);
       final none = <LoyaltyCard>[];
 
-      testFaker.settings.cardListViewOptions(sortingStyle: SortingStyle.nameAz)
+      faker.settings.cardListViewOptions(sortingStyle: SortingStyle.nameAz)
         ..sortCards(one)
         ..sortCards(none);
 

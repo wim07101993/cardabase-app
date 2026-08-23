@@ -1,46 +1,141 @@
+import 'dart:io';
+
 import 'package:cardabase/feature/cards/edit/widgets/form_fields/barcode_type_selector_button.dart';
 import 'package:cardabase/feature/cards/loyalty_card.dart';
 import 'package:cardabase/feature/cards/widgets/card_summary.dart';
 import 'package:cardabase/feature/settings/model.dart';
 import 'package:cardabase/main.dart';
-import 'package:cardabase/pages/home/home_page.dart';
+import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
-import 'get_it.dart';
-import 'hive.dart';
-import 'plugins.dart';
-import 'fakers/faker.dart';
-import 'fakers/settings.dart';
+import '../../test_helpers/fakers/settings.dart';
+import '../../test_helpers/get_it.dart';
+import '../../test_helpers/hive.dart';
+import '../../test_helpers/mocks/plugins/clipboard.dart';
+import '../../test_helpers/mocks/plugins/haptic_feedback.dart';
+import '../../test_helpers/mocks/plugins/path_provider.dart';
+import '../../test_helpers/mocks/plugins/permissions.dart';
+import '../../test_helpers/mocks/plugins/quick_actions.dart';
+import '../../test_helpers/mocks/plugins/receive_sharing_intent.dart';
+import '../../test_helpers/mocks/plugins/screen_brightness.dart';
 
-/// Everything the app needs around it: its boxes, its services and answers for
-/// the plugin channels it talks over. Put it at the top of an integration test
-/// group.
+/// The app registers its dependencies -- and with them its hive adapters --
+/// which can only happen once however many groups a file holds.
+bool _appIsUp = false;
+
+const String testAppVersion = '1.8.0';
+
+/// Brings up everything the app registers for itself.
+///
+/// The dependencies are the ones `main` registers -- the same boxes, the same
+/// migrations, the same services -- with only the platform underneath them
+/// answered by a fake: the storage lives in a directory of the tests, and the
+/// version comes from a fake package info rather than an installed apk.
+///
+/// [startApp] then starts the app the way `main` does, so what a test drives is
+/// the app rather than an approximation of it.
 void useApp({String? password}) {
-  useHive(password: password);
-  useGetIt();
-  usePlugins();
+  setUpAll(() async {
+    if (_appIsUp) {
+      return;
+    }
+    _appIsUp = true;
+
+    registerTestDependencies();
+  });
+
+  const scopeName = 'test';
+
+  setUp(() async {
+    GetIt.I.pushNewScope(scopeName: scopeName);
+    // the app is brought up before the test rather than while it runs: a test
+    // which drives it starts from an app which is already there.
+    await initializePlugins();
+    await initializeHiveBoxes();
+  });
+
+  tearDown(() async {
+    // the scope goes even when emptying the boxes throws: a scope which is
+    // left behind fails every test after this one with a complaint about its
+    // name rather than about what went wrong here.
+    try {
+      await resetHive(password: password);
+    } finally {
+      GetIt.I.dropScope(scopeName);
+    }
+  });
 }
 
-/// Starts the app on the screen it would open on, over a database which holds
-/// [cards].
-///
-/// It builds the real [Main] widget, so a test which drives it goes through the
-/// same widgets, the same storage and the same settings as the app itself.
+void registerTestDependencies() {
+  PackageInfo.setMockInitialValues(
+    appName: 'Cardabase',
+    packageName: 'com.georgeyt9769.cardabase',
+    version: testAppVersion,
+    buildNumber: '1',
+    buildSignature: '',
+  );
+
+  registerDependencies();
+  GetIt.I.registerSingleton(
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger,
+  );
+
+  GetIt.I.registerLazySingletonAsync(
+    () => Directory.systemTemp.createTemp('cardabase-test-storage-'),
+    instanceName: TestGetItInstanceNames.storageDirectory.value,
+  );
+  GetIt.I
+    ..registerMockHapticFeedback()
+    ..registerMockQuickActions()
+    ..registerMockScreenBrightness()
+    ..registerMockSharingIntent()
+    ..registerMockPermissions()
+    ..registerMockClipboard()
+    ..registerMockPathProvider();
+}
+
+// initializePlugins gets all mocked plugins from GetIt so that they are
+// initialized and wired up.
+Future<void> initializePlugins() {
+  GetIt.I<MockHapticFeedbackPlatform>();
+  GetIt.I<MockQuickActionsPlatform>();
+  GetIt.I<MockScreenBrightnessPlatform>();
+  GetIt.I<MockSharingIntentPlatform>();
+  GetIt.I<MockPermissionsPlatform>();
+  GetIt.I<MockClipboardPlatform>();
+  return GetIt.I.getAsync<MockPathProviderPlatform>();
+}
+
+Future<void> initializeHiveBoxes() async {
+  await Future.wait([
+    GetIt.I.getAsync<LoyaltyCardsBox>(),
+    GetIt.I.getAsync<SettingsBox>(),
+    GetIt.I.getAsync<Box>(instanceName: 'passwordBox'),
+  ]);
+}
+
+/// Starts the app over a database which holds [cards], through the same
+/// `run` the app itself starts with: it resolves the boxes, decides which
+/// screen to open on and calls `runApp`.
 Future<void> startApp(
   WidgetTester tester, {
   List<LoyaltyCard> cards = const [],
   Settings? settings,
   String? password,
-  Widget? initialScreen,
+  bool lockApp = false,
 }) async {
-  await tester.runAsync(() async {
-    await resetHive(
+  await tester.runAsync(
+    () => resetHive(
       cards: cards,
-      settings: settings ?? testFaker.settings.settings(),
+      settings: settings ?? faker.settings.settings(),
       password: password,
-    );
-  });
+      lockApp: lockApp,
+    ),
+  );
 
   // a phone, so the tests see what a user sees: on the default 800x600 test
   // surface the cards are wider and fewer of them fit.
@@ -49,9 +144,7 @@ Future<void> startApp(
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 
-  await tester.pumpWidget(
-    Main(initialScreen: initialScreen ?? const Homepage()),
-  );
+  await run();
   await tester.pumpAndSettle();
 }
 
@@ -60,7 +153,7 @@ Future<void> startApp(
 Future<void> restartApp(WidgetTester tester) async {
   await tester.pumpWidget(const SizedBox.shrink());
   await tester.pumpAndSettle();
-  await tester.pumpWidget(const Main(initialScreen: Homepage()));
+  await run();
   await tester.pumpAndSettle();
 }
 

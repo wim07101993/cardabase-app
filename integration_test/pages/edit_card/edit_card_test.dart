@@ -1,17 +1,17 @@
 import 'package:cardabase/feature/cards/loyalty_card.dart';
+import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
-import '../../../test/test_helpers/app.dart';
-import '../../../test/test_helpers/fakers/faker.dart';
-import '../../../test/test_helpers/fakers/loyalty_card.dart';
-import '../../../test/test_helpers/hive.dart';
+import '../../../test_helpers/fakers/loyalty_card.dart';
+import '../../../test_helpers/hive.dart';
+import '../../test_helpers/app.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  final validEan13 = testFaker.loyaltyCards.codeEAN13();
+  final validEan13 = faker.loyaltyCards.codeEAN13();
 
   Future<void> openNewCardForm(WidgetTester tester) async {
     await startApp(tester);
@@ -137,7 +137,7 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards.simpleCard().copyWith(
+          faker.loyaltyCards.simpleCard().copyWith(
                 id: 'card-under-test',
                 name: 'Delhaize',
                 barcode: Barcode(data: validEan13, type: BarcodeType.CodeEAN13),
@@ -163,7 +163,7 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards.simpleCard().copyWith(
+          faker.loyaltyCards.simpleCard().copyWith(
                 name: 'Delhaize',
                 notes: 'The one on the corner',
                 points: 12,
@@ -185,7 +185,7 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
+          faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
         ],
       );
 

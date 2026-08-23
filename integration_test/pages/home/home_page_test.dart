@@ -1,18 +1,18 @@
 import 'package:cardabase/feature/cards/card_list_view_options.dart';
+import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
-import '../../../test/test_helpers/app.dart';
-import '../../../test/test_helpers/fakers/faker.dart';
-import '../../../test/test_helpers/fakers/loyalty_card.dart';
-import '../../../test/test_helpers/fakers/settings.dart';
-import '../../../test/test_helpers/hive.dart';
+import '../../../test_helpers/fakers/loyalty_card.dart';
+import '../../../test_helpers/fakers/settings.dart';
+import '../../../test_helpers/hive.dart';
+import '../../test_helpers/app.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  final validEan13 = testFaker.loyaltyCards.codeEAN13();
+  final validEan13 = faker.loyaltyCards.codeEAN13();
 
   group('the card list', () {
     useApp();
@@ -28,8 +28,8 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
-          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt'),
+          faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
+          faker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt'),
         ],
       );
 
@@ -79,7 +79,7 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
+          faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
         ],
       );
 
@@ -103,15 +103,13 @@ void main() {
     testWidgets('moves a card down the order of the user', (tester) async {
       // moving cards around is only offered while the user sorts them
       // themselves, and it is that order which is changed.
-      final first =
-          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize');
-      final second =
-          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt');
+      final first = faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize');
+      final second = faker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt');
       await startApp(
         tester,
         cards: [first, second],
-        settings: testFaker.settings.settings(
-          cardListViewOptions: testFaker.settings.cardListViewOptions(
+        settings: faker.settings.settings(
+          cardListViewOptions: faker.settings.cardListViewOptions(
             sortingStyle: SortingStyle.custom,
             customOrder: [first.id, second.id],
           ),
@@ -128,15 +126,13 @@ void main() {
     });
 
     testWidgets('moves a card up the order of the user', (tester) async {
-      final first =
-          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize');
-      final second =
-          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt');
+      final first = faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize');
+      final second = faker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt');
       await startApp(
         tester,
         cards: [first, second],
-        settings: testFaker.settings.settings(
-          cardListViewOptions: testFaker.settings.cardListViewOptions(
+        settings: faker.settings.settings(
+          cardListViewOptions: faker.settings.cardListViewOptions(
             sortingStyle: SortingStyle.custom,
             customOrder: [first.id, second.id],
           ),
@@ -157,8 +153,8 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
-          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt'),
+          faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
+          faker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt'),
         ],
       );
 
@@ -177,7 +173,7 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
+          faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
         ],
       );
 
@@ -192,19 +188,19 @@ void main() {
     useApp();
 
     testWidgets('sort the cards by name', (tester) async {
-      final delhaize = testFaker.loyaltyCards.simpleCard().copyWith(
+      final delhaize = faker.loyaltyCards.simpleCard().copyWith(
             name: 'Delhaize',
             lastModifiedAt: DateTime.utc(2024, 1, 1, 12),
           );
-      final colruyt = testFaker.loyaltyCards.simpleCard().copyWith(
+      final colruyt = faker.loyaltyCards.simpleCard().copyWith(
             name: 'Colruyt',
             lastModifiedAt: DateTime.utc(2024, 1, 1, 12, 1),
           );
       await startApp(
         tester,
         cards: [delhaize, colruyt],
-        settings: testFaker.settings.settings(
-          cardListViewOptions: testFaker.settings
+        settings: faker.settings.settings(
+          cardListViewOptions: faker.settings
               .cardListViewOptions(sortingStyle: SortingStyle.latest),
         ),
       );
@@ -232,7 +228,7 @@ void main() {
       await startApp(
         tester,
         cards: [
-          testFaker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
+          faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
         ],
       );
 

@@ -2,11 +2,8 @@ import 'package:cardabase/feature/cards/card_list_view_options.dart';
 import 'package:cardabase/feature/settings/model.dart';
 import 'package:faker/faker.dart';
 
+import '../../integration_test/test_helpers/app.dart';
 import 'random.dart';
-
-/// The version the fake package info of the tests reports, so settings which
-/// name it belong to somebody who has seen this version before.
-const String testAppVersion = '1.8.0';
 
 extension SettingsFakerExtensions on Faker {
   SettingsFaker get settings => SettingsFaker(this);

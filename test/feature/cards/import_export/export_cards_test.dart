@@ -4,24 +4,18 @@ import 'package:cardabase/feature/cards/import_export/export_cards.dart';
 import 'package:faker/faker.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../test_helpers/fakers/loyalty_card.dart';
-import '../../../test_helpers/mocks.dart';
-import '../../../test_helpers/plugins.dart';
+import '../../../../test_helpers/fakers/loyalty_card.dart';
+import '../../../../test_helpers/mocks/plugins/clipboard.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('exportCardsToClipboard', () {
-    late TestDefaultBinaryMessenger messenger;
-    late MockClipboard clipboard;
+    late MockClipboardPlatform clipboard;
 
     setUp(() {
-      messenger =
-          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
-      clipboard = MockClipboard();
-      messenger.setMockMethodCallHandler(
-        platformChannel,
-        clipboard.handleChannelMethodCall,
+      clipboard = createMockClipboardPlatform(
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger,
       );
     });
 
@@ -38,8 +32,8 @@ void main() {
       await exportCardsToClipboard(cards);
 
       // ASSERT
-      expect(clipboard.text, isNotNull);
-      final decoded = jsonDecode(clipboard.text!);
+      expect(clipboard.clipboardText, isNotNull);
+      final decoded = jsonDecode(clipboard.clipboardText!);
       expect(decoded, isA<List>());
 
       final gotList = decoded as List;
@@ -55,7 +49,7 @@ void main() {
       await exportCardsToClipboard([]);
 
       // ASSERT
-      expect(clipboard.text, '[]');
+      expect(clipboard.clipboardText, '[]');
     });
   });
 }
