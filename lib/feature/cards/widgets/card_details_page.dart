@@ -171,11 +171,11 @@ class _CardDetailsPageState extends State<CardDetailsPage> {
         onPressed: card == null
             ? null
             : () => showDialog(
-          context: context,
-          builder: (context) => ShareCardDialog(
-            data: card?.toJson() ?? '',
-          ),
-        ),
+                  context: context,
+                  builder: (context) => ShareCardDialog(
+                    data: card?.toJson() ?? '',
+                  ),
+                ),
       ),
       actions: [
         if (settingsBox.value.developerOptions.isEnabled)

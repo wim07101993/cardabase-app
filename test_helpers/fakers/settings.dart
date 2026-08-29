@@ -2,7 +2,7 @@ import 'package:cardabase/feature/cards/card_list_view_options.dart';
 import 'package:cardabase/feature/settings/model.dart';
 import 'package:faker/faker.dart';
 
-import '../../integration_test/test_helpers/app.dart';
+import '../../integration_test/app_harness.dart';
 import 'random.dart';
 
 extension SettingsFakerExtensions on Faker {
@@ -101,6 +101,7 @@ class SettingsFaker {
       isEnabled: faker.randomGenerator.boolean(),
       lastUpdate: faker.nullOr(() => faker.date.dateTime().toUtc()),
       interval: Duration(days: faker.randomGenerator.integer(30, min: 1)),
+      format: BackupFormat.json,
     );
   }
 }

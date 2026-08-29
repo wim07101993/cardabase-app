@@ -1,3 +1,4 @@
+import 'package:barcode_widget/barcode_widget.dart';
 import 'package:cardabase/feature/cards/import_export/import_cards.dart';
 import 'package:cardabase/feature/cards/loyalty_card.dart';
 import 'package:flutter_test/flutter_test.dart';

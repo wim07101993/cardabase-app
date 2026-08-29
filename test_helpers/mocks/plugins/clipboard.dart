@@ -13,6 +13,10 @@ abstract class _ClipboardPlatform {
   Future<bool> hasStrings();
 }
 
+/// The handler stays on the messenger afterwards on purpose: the integration
+/// tests reach the mock through a get_it singleton which outlives the test
+/// which happened to create it, and tearing the handler down there would leave
+/// every later test in the file writing to a clipboard nobody listens to.
 MockClipboardPlatform createMockClipboardPlatform(
   TestDefaultBinaryMessenger messenger,
 ) {
@@ -23,7 +27,10 @@ MockClipboardPlatform createMockClipboardPlatform(
       return switch (call.method) {
         'Clipboard.setData' => mock.setData(call.arguments),
         'Clipboard.getData' => mock.getData(call.arguments),
-        'Clipboard.hasStrings' => mock.hasStrings(),
+        // the framework reads the answer to this one out of a map rather than
+        // taking it as it comes.
+        'Clipboard.hasStrings' =>
+          mock.hasStrings().then((hasStrings) => {'value': hasStrings}),
         // the platform channel carries more than the clipboard -- the
         // system chrome, the sounds, the navigator -- and none of that has
         // to happen for a test to pass.
@@ -48,8 +55,8 @@ MockClipboardPlatform createMockClipboardPlatform(
 
 extension ClipboardGetItExtensions on GetIt {
   void registerMockClipboard() {
-    GetIt.I.registerLazySingleton(() {
-      return createMockClipboardPlatform(GetIt.I<TestDefaultBinaryMessenger>());
+    registerLazySingleton(() {
+      return createMockClipboardPlatform(get<TestDefaultBinaryMessenger>());
     });
   }
 }

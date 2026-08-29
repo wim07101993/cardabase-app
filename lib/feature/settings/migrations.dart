@@ -40,17 +40,18 @@ Future<void> migrateSettingsTo202603(
             ? null
             : DateTime.tryParse(lastAutoUpdate)?.toUtc(),
         interval: Duration(days: oldBox.get('autoBackupInterval') as int? ?? 7),
+        format: BackupFormat.json,
       ),
       theme: ThemeSettings(
         useDarkMode: oldBox.get('useDarkMode') as bool? ?? false,
         useExtraDark: oldBox.get('useExtraDark') as bool? ?? false,
         useSystemFont: oldBox.get('useSystemFont') as bool? ?? false,
         loyaltyCardEffect: loyaltyCardEffect == null
-          ? const LoyaltyCardEffectSettings.defaultValue()
-          : LoyaltyCardEffectSettings(
-              isEnabled: oldBox.get('effect') as bool? ?? false,
-              effect: loyaltyCardEffect,
-            ),
+            ? const LoyaltyCardEffectSettings.defaultValue()
+            : LoyaltyCardEffectSettings(
+                isEnabled: oldBox.get('effect') as bool? ?? false,
+                effect: loyaltyCardEffect,
+              ),
         rightBackButton: oldBox.get('rightBackButton') as bool? ?? false,
       ),
       developerOptions: DeveloperOptions(

@@ -1,37 +1,34 @@
 import 'package:cardabase/feature/cards/loyalty_card.dart';
+import 'package:cardabase/feature/settings/get_it.dart';
+import 'package:cardabase/feature/settings/model.dart';
 import 'package:cardabase/main.dart';
 import 'package:cardabase/pages/home/home_page.dart';
+import 'package:cardabase/pages/lock_screen.dart';
+import 'package:cardabase/pages/welcome_screen.dart';
 import 'package:faker/faker.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:integration_test/integration_test.dart';
 
 import '../test_helpers/fakers/loyalty_card.dart';
 import '../test_helpers/fakers/settings.dart';
-import 'test_helpers/app.dart';
+import 'app_harness.dart';
 
-void main() {
+void main() => testMain();
+
+void testMain() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   final validEan13 = faker.loyaltyCards.codeEAN13();
 
-  setUpAll(() {
-    registerTestDependencies();
-  });
-
-  setUp(() async {
-    GetIt.I.pushNewScope(scopeName: 'test-scope');
-    await initializePlugins();
-    await initializeHiveBoxes();
-  });
-
-  tearDown(() {
-    GetIt.I.popScope();
-  });
+  useApp();
 
   group('starting the app', () {
     testWidgets('opens on the cards of the user', (tester) async {
       // ARRANGE
+      usePhoneView(tester);
       final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
       await loyaltyCardsBox.put(
         'shop-1',
@@ -46,37 +43,67 @@ void main() {
     });
 
     testWidgets('shows what is new after an update', (tester) async {
-      // `main` shows the welcome screen when the version which was last seen is
-      // not the one which is running.
-      await startApp(
-        tester,
-        settings: faker.settings.settings(lastSeenAppVersion: null),
-      );
+      // ARRANGE the welcome screen is what the app opens on when the version
+      // which was last seen is not the one which is running.
+      usePhoneView(tester);
+      final settingsBox = await GetIt.I.getAsync<SettingsBox>();
+      await settingsBox.save(faker.settings.settings(lastSeenAppVersion: null));
 
+      // ACT
+      await tester.pumpWidget(
+        Main(initialScreen: WelcomeScreen(currentAppVersion: testAppVersion)),
+      );
+      await tester.pumpAndSettle();
+
+      // ASSERT
       expect(find.textContaining('Welcome'), findsWidgets);
 
-      await tapAndSettle(tester, find.textContaining('Continue'));
+      await tapAndSettle(tester, find.text('Continue'));
 
       expect(find.text('Cardabase'), findsOneWidget);
       expect(
-        storedSettings().lastSeenAppVersion,
+        settingsBox.value.lastSeenAppVersion,
         testAppVersion,
         reason: 'the welcome screen should not come back on the next start',
       );
     });
 
     testWidgets('asks for the password when the app is locked', (tester) async {
-      // the third screen `main` can open on: a password which locks the app.
-      await startApp(tester, password: 'letmein', lockApp: true);
+      // ARRANGE a user who put a password in front of the app.
+      usePhoneView(tester);
+      final passwordBox =
+          await GetIt.I.getAsync<Box>(instanceName: 'passwordBox');
+      await passwordBox.putAll({'PW': 'letmein', 'lock_app': true});
+      final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
+      await loyaltyCardsBox.put(
+        'shop-1',
+        faker.loyaltyCards.simpleCard().copyWith(id: 'shop-1', name: 'Shop 1'),
+      );
 
+      // ACT
+      await tester.pumpWidget(Main(initialScreen: LockScreen()));
+      await tester.pumpAndSettle();
+
+      // ASSERT the cards stay behind the lock screen until the password is in.
       expect(find.byType(Homepage), findsNothing);
-      expect(find.byType(LockScreen), findsOneWidget);
+      expect(find.text('Shop 1'), findsNothing);
+      expect(find.text('Enter your password to continue'), findsOneWidget);
+
+      await tester.enterText(find.byType(EditableText), 'letmein');
+      await tapAndSettle(tester, find.text('UNLOCK'));
+
+      expect(find.byType(Homepage), findsOneWidget);
+      expect(find.text('Shop 1'), findsOneWidget);
     });
 
     testWidgets('a card which was added is still there after a restart',
         (tester) async {
-      await startApp(tester);
+      // ARRANGE
+      usePhoneView(tester);
+      await tester.pumpWidget(Main(initialScreen: Homepage()));
+      await tester.pumpAndSettle();
 
+      // ACT
       await tapAndSettle(tester, find.byIcon(Icons.add_card));
       await enterText(tester, 'Card Name', 'Delhaize');
       await pickBarcodeType(tester, 'EAN-13');
@@ -84,26 +111,37 @@ void main() {
       await tapAndSettle(tester, find.text('SAVE'));
       expect(find.text('Delhaize'), findsOneWidget);
 
-      // start the app again over the same database, the way a user would come
+      // the app is built again over the same database, the way a user comes
       // back to it the next day.
-      await restartApp(tester);
+      await restart(tester, Homepage());
 
+      // ASSERT
       expect(find.text('Delhaize'), findsOneWidget);
-      expect(storedCardNames(), ['Delhaize']);
+      final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
+      expect(
+        loyaltyCardsBox.values.map((card) => card.name),
+        ['Delhaize'],
+      );
     });
 
     testWidgets('a theme which was chosen is still there after a restart',
         (tester) async {
-      await startApp(tester);
+      // ARRANGE
+      usePhoneView(tester);
+      await tester.pumpWidget(Main(initialScreen: Homepage()));
+      await tester.pumpAndSettle();
 
+      // ACT
       await tapAndSettle(tester, find.byIcon(Icons.settings));
       await scrollTo(tester, find.text('Switch Themes'));
       await tapAndSettle(tester, find.text('Switch Themes'));
       await tapAndSettle(tester, find.byIcon(Icons.arrow_back_ios_new).first);
 
-      await restartApp(tester);
+      await restart(tester, Homepage());
 
-      expect(storedSettings().theme.useDarkMode, isTrue);
+      // ASSERT
+      final settingsBox = await GetIt.I.getAsync<SettingsBox>();
+      expect(settingsBox.value.theme.useDarkMode, isTrue);
       expect(
         Theme.of(tester.element(find.text('Cardabase'))).brightness,
         Brightness.dark,

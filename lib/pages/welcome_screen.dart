@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:cardabase/feature/settings/get_it.dart';
 import 'package:cardabase/feature/settings/model.dart';
 import 'package:cardabase/pages/home/home_page.dart';
- import 'package:cardabase/pages/lock_screen.dart';
+import 'package:cardabase/pages/lock_screen.dart';
 import 'package:cardabase/pages/terms_of_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle, SystemNavigator;
@@ -83,8 +83,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   void continueToApp() async {
     final editable = settingsBox.value.editable();
-    editable.lastSeenAppVersion.value =
-        widget.currentAppVersion;
+    editable.lastSeenAppVersion.value = widget.currentAppVersion;
     await settingsBox.save(editable.seal());
     editable.dispose();
 
@@ -107,8 +106,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final isErrorOrEmpty = changelog == 'No changelog found for this version.' ||
-        changelog == 'Failed to load changelog.';
+    final isErrorOrEmpty =
+        changelog == 'No changelog found for this version.' ||
+            changelog == 'Failed to load changelog.';
     final hasEnoughLines = (changelog?.split('\n').length ?? 0) > 3;
     final showExpandButton = !isErrorOrEmpty && hasEnoughLines;
 
@@ -224,7 +224,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               icon: Icon(
                 Icons.arrow_back_ios_new,
                 color: theme.colorScheme.secondary,
-              ), onPressed: continueToApp,
+              ),
+              onPressed: continueToApp,
             ),
           ),
         ],
@@ -323,14 +324,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         if (!context.mounted) {
                           return;
                         }
-                        final passwordBox = GetIt.I<Box>(instanceName: 'passwordBox');
+                        final passwordBox =
+                            GetIt.I<Box>(instanceName: 'passwordBox');
                         final storedPassword = passwordBox.get('PW');
-                        final hasPassword = storedPassword is String && storedPassword.isNotEmpty;
-                        final lockApp = passwordBox.get('lock_app', defaultValue: false);
+                        final hasPassword = storedPassword is String &&
+                            storedPassword.isNotEmpty;
+                        final lockApp =
+                            passwordBox.get('lock_app', defaultValue: false);
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
-                            builder: (context) =>
-                                (hasPassword && lockApp) ? const LockScreen() : const Homepage(),
+                            builder: (context) => (hasPassword && lockApp)
+                                ? const LockScreen()
+                                : const Homepage(),
                           ),
                         );
                       },
@@ -355,8 +360,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       ),
                       child: Text(
                         'Skip for now',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                            color: theme.colorScheme.inverseSurface),
+                        style: theme.textTheme.bodyLarge
+                            ?.copyWith(color: theme.colorScheme.inverseSurface),
                       ),
                     ),
                   ),

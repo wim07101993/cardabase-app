@@ -1,38 +1,58 @@
 import 'package:cardabase/feature/cards/card_list_view_options.dart';
+import 'package:cardabase/feature/cards/loyalty_card.dart';
+import 'package:cardabase/feature/settings/get_it.dart';
+import 'package:cardabase/feature/settings/model.dart';
+import 'package:cardabase/main.dart';
+import 'package:cardabase/pages/home/home_page.dart';
 import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:integration_test/integration_test.dart';
 
 import '../../../test_helpers/fakers/loyalty_card.dart';
 import '../../../test_helpers/fakers/settings.dart';
-import '../../../test_helpers/hive.dart';
-import '../../test_helpers/app.dart';
+import '../../app_harness.dart';
 
-void main() {
+void main() => testHomePage();
+
+void testHomePage() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  final validEan13 = faker.loyaltyCards.codeEAN13();
+  useApp();
 
   group('the card list', () {
-    useApp();
-
     testWidgets('says there is nothing to see when there are no cards',
         (tester) async {
-      await startApp(tester);
+      // ARRANGE
+      usePhoneView(tester);
 
+      // ACT
+      await tester.pumpWidget(Main(initialScreen: Homepage()));
+      await tester.pumpAndSettle();
+
+      // ASSERT
       expect(find.text('There is nothing to see...'), findsOneWidget);
     });
 
     testWidgets('shows the cards which are stored', (tester) async {
-      await startApp(
-        tester,
-        cards: [
-          faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
-          faker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt'),
-        ],
-      );
+      // ARRANGE
+      usePhoneView(tester);
+      final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
+      await loyaltyCardsBox.putAll({
+        'delhaize': faker.loyaltyCards
+            .simpleCard()
+            .copyWith(id: 'delhaize', name: 'Delhaize'),
+        'colruyt': faker.loyaltyCards
+            .simpleCard()
+            .copyWith(id: 'colruyt', name: 'Colruyt'),
+      });
 
+      // ACT
+      await tester.pumpWidget(Main(initialScreen: Homepage()));
+      await tester.pumpAndSettle();
+
+      // ASSERT
       expect(find.text('Delhaize'), findsOneWidget);
       await scrollToCard(tester, 'Colruyt');
       expect(find.text('Colruyt'), findsOneWidget);
@@ -41,53 +61,67 @@ void main() {
   });
 
   group('adding a card', () {
-    useApp();
-
     testWidgets('a new card is shown and kept', (tester) async {
-      await startApp(tester);
+      // ARRANGE
+      usePhoneView(tester);
+      await tester.pumpWidget(Main(initialScreen: Homepage()));
+      await tester.pumpAndSettle();
 
+      final barcode = faker.loyaltyCards.codeEAN13();
+      final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
+
+      // ACT
       await tapAndSettle(tester, find.byIcon(Icons.add_card));
       await enterText(tester, 'Card Name', 'Delhaize');
       await pickBarcodeType(tester, 'EAN-13');
-      await enterText(tester, 'Card ID', validEan13);
+      await enterText(tester, 'Card ID', barcode);
       await tapAndSettle(tester, find.text('SAVE'));
 
+      // ASSERT
       expect(find.text('Cardabase'), findsOneWidget, reason: 'back on home');
       expect(find.text('Delhaize'), findsOneWidget);
-      expect(storedCardNames(), ['Delhaize']);
-      expect(
-        storedCards().single.barcode.data,
-        validEan13,
-        reason: 'the number is what makes the barcode',
-      );
+      expect(loyaltyCardsBox.values.map((card) => card.name), ['Delhaize']);
+      expect(loyaltyCardsBox.values.single.barcode.data, barcode);
     });
 
     testWidgets('a card without a name is not saved', (tester) async {
-      await startApp(tester);
+      // ARRANGE
+      usePhoneView(tester);
+      await tester.pumpWidget(Main(initialScreen: Homepage()));
+      await tester.pumpAndSettle();
 
+      final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
+
+      // ACT
       await tapAndSettle(tester, find.byIcon(Icons.add_card));
       await tapAndSettle(tester, find.text('SAVE'));
 
-      expect(storedCards(), isEmpty);
+      // ASSERT
+      expect(loyaltyCardsBox.values, isEmpty);
     });
   });
 
   group('the menu of a card', () {
-    useApp();
-
     testWidgets('duplicates a card, copy and all', (tester) async {
-      await startApp(
-        tester,
-        cards: [
-          faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
-        ],
+      // ARRANGE
+      usePhoneView(tester);
+      final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
+      await loyaltyCardsBox.put(
+        'delhaize',
+        faker.loyaltyCards
+            .simpleCard()
+            .copyWith(id: 'delhaize', name: 'Delhaize'),
       );
+      await tester.pumpWidget(Main(initialScreen: Homepage()));
+      await tester.pumpAndSettle();
 
+      // ACT
       await openCardMenu(tester, 'Delhaize');
       await tapAndSettle(tester, find.text('Duplicate'));
 
-      expect(storedCardNames(), ['Delhaize', 'Delhaize']);
-      final cards = storedCards();
+      // ASSERT
+      final cards = loyaltyCardsBox.values.toList(growable: false);
+      expect(cards.map((card) => card.name), ['Delhaize', 'Delhaize']);
       expect(
         cards.first.barcode.data,
         cards.last.barcode.data,
@@ -101,122 +135,169 @@ void main() {
     });
 
     testWidgets('moves a card down the order of the user', (tester) async {
-      // moving cards around is only offered while the user sorts them
+      // ARRANGE moving cards around is only offered while the user sorts them
       // themselves, and it is that order which is changed.
-      final first = faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize');
-      final second = faker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt');
-      await startApp(
-        tester,
-        cards: [first, second],
-        settings: faker.settings.settings(
+      usePhoneView(tester);
+      final first = faker.loyaltyCards
+          .simpleCard()
+          .copyWith(id: 'delhaize', name: 'Delhaize');
+      final second = faker.loyaltyCards
+          .simpleCard()
+          .copyWith(id: 'colruyt', name: 'Colruyt');
+      final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
+      await loyaltyCardsBox.putAll({first.id: first, second.id: second});
+      final settingsBox = await GetIt.I.getAsync<SettingsBox>();
+      await settingsBox.save(
+        faker.settings.settings(
           cardListViewOptions: faker.settings.cardListViewOptions(
             sortingStyle: SortingStyle.custom,
             customOrder: [first.id, second.id],
           ),
         ),
       );
+      await tester.pumpWidget(Main(initialScreen: Homepage()));
+      await tester.pumpAndSettle();
 
+      // ACT
       await openCardMenu(tester, 'Delhaize');
       await tapAndSettle(tester, find.text('Move DOWN'));
 
+      // ASSERT
       expect(
-        storedSettings().cardListViewOptions.customOrder,
+        settingsBox.value.cardListViewOptions.customOrder,
         [second.id, first.id],
       );
     });
 
     testWidgets('moves a card up the order of the user', (tester) async {
-      final first = faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize');
-      final second = faker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt');
-      await startApp(
-        tester,
-        cards: [first, second],
-        settings: faker.settings.settings(
+      // ARRANGE
+      usePhoneView(tester);
+      final first = faker.loyaltyCards
+          .simpleCard()
+          .copyWith(id: 'delhaize', name: 'Delhaize');
+      final second = faker.loyaltyCards
+          .simpleCard()
+          .copyWith(id: 'colruyt', name: 'Colruyt');
+      final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
+      await loyaltyCardsBox.putAll({first.id: first, second.id: second});
+      final settingsBox = await GetIt.I.getAsync<SettingsBox>();
+      await settingsBox.save(
+        faker.settings.settings(
           cardListViewOptions: faker.settings.cardListViewOptions(
             sortingStyle: SortingStyle.custom,
             customOrder: [first.id, second.id],
           ),
         ),
       );
+      await tester.pumpWidget(Main(initialScreen: Homepage()));
+      await tester.pumpAndSettle();
 
+      // ACT
       await scrollToCard(tester, 'Colruyt');
       await openCardMenu(tester, 'Colruyt');
       await tapAndSettle(tester, find.text('Move UP'));
 
+      // ASSERT
       expect(
-        storedSettings().cardListViewOptions.customOrder,
+        settingsBox.value.cardListViewOptions.customOrder,
         [second.id, first.id],
       );
     });
 
     testWidgets('deletes a card, after asking', (tester) async {
-      await startApp(
-        tester,
-        cards: [
-          faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
-          faker.loyaltyCards.simpleCard().copyWith(name: 'Colruyt'),
-        ],
-      );
+      // ARRANGE
+      usePhoneView(tester);
+      final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
+      await loyaltyCardsBox.putAll({
+        'delhaize': faker.loyaltyCards
+            .simpleCard()
+            .copyWith(id: 'delhaize', name: 'Delhaize'),
+        'colruyt': faker.loyaltyCards
+            .simpleCard()
+            .copyWith(id: 'colruyt', name: 'Colruyt'),
+      });
+      await tester.pumpWidget(Main(initialScreen: Homepage()));
+      await tester.pumpAndSettle();
 
+      // ACT
       await openCardMenu(tester, 'Delhaize');
       await tapAndSettle(tester, find.widgetWithText(ListTile, 'DELETE'));
 
+      // ASSERT
       expect(find.text('Delete Card'), findsOneWidget);
       expect(find.textContaining('Delhaize'), findsWidgets);
       await tapAndSettle(tester, find.widgetWithText(OutlinedButton, 'DELETE'));
 
       expect(find.text('Delhaize'), findsNothing);
-      expect(storedCardNames(), ['Colruyt']);
+      expect(loyaltyCardsBox.values.map((card) => card.name), ['Colruyt']);
     });
 
     testWidgets('opens the card in the edit form', (tester) async {
-      await startApp(
-        tester,
-        cards: [
-          faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
-        ],
+      // ARRANGE
+      usePhoneView(tester);
+      final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
+      await loyaltyCardsBox.put(
+        'delhaize',
+        faker.loyaltyCards
+            .simpleCard()
+            .copyWith(id: 'delhaize', name: 'Delhaize'),
       );
+      await tester.pumpWidget(Main(initialScreen: Homepage()));
+      await tester.pumpAndSettle();
 
+      // ACT
       await openCardMenu(tester, 'Delhaize');
       await tapAndSettle(tester, find.text('Edit'));
 
+      // ASSERT
       expect(fieldText(tester, 'Card Name'), 'Delhaize');
     });
   });
 
   group('the view options', () {
-    useApp();
-
     testWidgets('sort the cards by name', (tester) async {
+      // ARRANGE
+      usePhoneView(tester);
       final delhaize = faker.loyaltyCards.simpleCard().copyWith(
+            id: 'delhaize',
             name: 'Delhaize',
             lastModifiedAt: DateTime.utc(2024, 1, 1, 12),
           );
       final colruyt = faker.loyaltyCards.simpleCard().copyWith(
+            id: 'colruyt',
             name: 'Colruyt',
             lastModifiedAt: DateTime.utc(2024, 1, 1, 12, 1),
           );
-      await startApp(
-        tester,
-        cards: [delhaize, colruyt],
-        settings: faker.settings.settings(
+      final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
+      await loyaltyCardsBox
+          .putAll({delhaize.id: delhaize, colruyt.id: colruyt});
+      final settingsBox = await GetIt.I.getAsync<SettingsBox>();
+      await settingsBox.save(
+        faker.settings.settings(
           cardListViewOptions: faker.settings
               .cardListViewOptions(sortingStyle: SortingStyle.latest),
         ),
       );
+      await tester.pumpWidget(Main(initialScreen: Homepage()));
+      await tester.pumpAndSettle();
       expect(
         shownCardIds(tester),
         [colruyt.id, delhaize.id],
         reason: 'the card which changed last comes first',
       );
 
+      // ACT
+      // the sort button lives in the search row, which the search icon
+      // in the app bar opens.
+      await tapAndSettle(tester, find.byIcon(Icons.search));
       await tapAndSettle(tester, find.byIcon(Icons.sort));
       await tapAndSettle(tester, find.byType(DropdownMenu<SortingStyle>));
       await tapAndSettle(tester, find.text('Name 0-Z').last);
       await tapAndSettle(tester, find.text('SELECT'));
 
+      // ASSERT
       expect(
-        storedSettings().cardListViewOptions.sortingStyle,
+        settingsBox.value.cardListViewOptions.sortingStyle,
         SortingStyle.nameAz,
         reason: 'the choice should be saved',
       );
@@ -225,21 +306,32 @@ void main() {
 
     testWidgets('remember how many columns the cards are shown in',
         (tester) async {
-      await startApp(
-        tester,
-        cards: [
-          faker.loyaltyCards.simpleCard().copyWith(name: 'Delhaize'),
-        ],
+      // ARRANGE
+      usePhoneView(tester);
+      final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
+      await loyaltyCardsBox.put(
+        'delhaize',
+        faker.loyaltyCards
+            .simpleCard()
+            .copyWith(id: 'delhaize', name: 'Delhaize'),
       );
+      await tester.pumpWidget(Main(initialScreen: Homepage()));
+      await tester.pumpAndSettle();
 
+      // ACT
+      // the sort button lives in the search row, which the search icon
+      // in the app bar opens.
+      await tapAndSettle(tester, find.byIcon(Icons.search));
       await tapAndSettle(tester, find.byIcon(Icons.sort));
       expect(find.text('Columns: 1'), findsOneWidget);
       await tester.drag(find.byType(Slider), const Offset(200, 0));
       await tester.pumpAndSettle();
       await tapAndSettle(tester, find.text('SELECT'));
 
+      // ASSERT
+      final settingsBox = await GetIt.I.getAsync<SettingsBox>();
       expect(
-        storedSettings().cardListViewOptions.numberOfColumns,
+        settingsBox.value.cardListViewOptions.numberOfColumns,
         greaterThan(1),
         reason: 'the choice should be saved',
       );

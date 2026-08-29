@@ -87,7 +87,8 @@ class _QRBarReaderState extends State<QRBarReader> {
               Expanded(flex: 4, child: _buildQrView(context)),
             ],
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
           floatingActionButton: Container(
             margin: const EdgeInsets.fromLTRB(20, 10, 20, 10),
             decoration: BoxDecoration(

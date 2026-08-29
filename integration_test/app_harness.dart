@@ -5,72 +5,36 @@ import 'package:cardabase/feature/cards/loyalty_card.dart';
 import 'package:cardabase/feature/cards/widgets/card_summary.dart';
 import 'package:cardabase/feature/settings/model.dart';
 import 'package:cardabase/main.dart';
-import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-import '../../test_helpers/fakers/settings.dart';
-import '../../test_helpers/get_it.dart';
-import '../../test_helpers/hive.dart';
-import '../../test_helpers/mocks/plugins/clipboard.dart';
-import '../../test_helpers/mocks/plugins/haptic_feedback.dart';
-import '../../test_helpers/mocks/plugins/path_provider.dart';
-import '../../test_helpers/mocks/plugins/permissions.dart';
-import '../../test_helpers/mocks/plugins/quick_actions.dart';
-import '../../test_helpers/mocks/plugins/receive_sharing_intent.dart';
-import '../../test_helpers/mocks/plugins/screen_brightness.dart';
-
-/// The app registers its dependencies -- and with them its hive adapters --
-/// which can only happen once however many groups a file holds.
-bool _appIsUp = false;
+import '../test_helpers/get_it.dart';
+import '../test_helpers/mocks/plugins/clipboard.dart';
+import '../test_helpers/mocks/plugins/haptic_feedback.dart';
+import '../test_helpers/mocks/plugins/path_provider.dart';
+import '../test_helpers/mocks/plugins/permissions.dart';
+import '../test_helpers/mocks/plugins/quick_actions.dart';
+import '../test_helpers/mocks/plugins/receive_sharing_intent.dart';
+import '../test_helpers/mocks/plugins/screen_brightness.dart';
 
 const String testAppVersion = '1.8.0';
 
-/// Brings up everything the app registers for itself.
+/// Whether the dependencies were registered already.
 ///
-/// The dependencies are the ones `main` registers -- the same boxes, the same
-/// migrations, the same services -- with only the platform underneath them
-/// answered by a fake: the storage lives in a directory of the tests, and the
-/// version comes from a fake package info rather than an installed apk.
-///
-/// [startApp] then starts the app the way `main` does, so what a test drives is
-/// the app rather than an approximation of it.
-void useApp({String? password}) {
-  setUpAll(() async {
-    if (_appIsUp) {
-      return;
-    }
-    _appIsUp = true;
-
-    registerTestDependencies();
-  });
-
-  const scopeName = 'test';
-
-  setUp(() async {
-    GetIt.I.pushNewScope(scopeName: scopeName);
-    // the app is brought up before the test rather than while it runs: a test
-    // which drives it starts from an app which is already there.
-    await initializePlugins();
-    await initializeHiveBoxes();
-  });
-
-  tearDown(() async {
-    // the scope goes even when emptying the boxes throws: a scope which is
-    // left behind fails every test after this one with a complaint about its
-    // name rather than about what went wrong here.
-    try {
-      await resetHive(password: password);
-    } finally {
-      GetIt.I.dropScope(scopeName);
-    }
-  });
-}
+/// There is one get_it for the whole test process, so a suite which pulls
+/// several test files into a single `main` (see `integration_test.dart`) asks
+/// for this once per file. The first registration is the one which counts.
+bool _dependenciesRegistered = false;
 
 void registerTestDependencies() {
+  if (_dependenciesRegistered) {
+    return;
+  }
+  _dependenciesRegistered = true;
+
   PackageInfo.setMockInitialValues(
     appName: 'Cardabase',
     packageName: 'com.georgeyt9769.cardabase',
@@ -98,6 +62,47 @@ void registerTestDependencies() {
     ..registerMockPathProvider();
 }
 
+const String _testScopeName = 'test-scope';
+
+/// Registers what every integration test file needs: the dependencies, the
+/// mocked plugins, the boxes, and a get_it scope per test.
+///
+/// A file which is run on its own registers these once. A suite which pulls
+/// several files into a single `main` registers them once per file and runs all
+/// of them for every test, so each of them has to be able to run again without
+/// undoing what the one before it did.
+void useApp() {
+  setUpAll(registerTestDependencies);
+
+  setUp(() async {
+    pushTestScope();
+    await initializePlugins();
+    await initializeHiveBoxes();
+  });
+
+  tearDown(() async {
+    await clearHiveBoxes();
+    popTestScope();
+  });
+}
+
+/// Pushes the scope a test runs in, so whatever the app registers while it runs
+/// is gone again afterwards. Does nothing when the scope is already there.
+void pushTestScope() {
+  if (GetIt.I.currentScopeName == _testScopeName) {
+    return;
+  }
+  GetIt.I.pushNewScope(scopeName: _testScopeName);
+}
+
+/// Drops the scope [pushTestScope] pushed, if it is still the one on top.
+void popTestScope() {
+  if (GetIt.I.currentScopeName != _testScopeName) {
+    return;
+  }
+  GetIt.I.popScope();
+}
+
 // initializePlugins gets all mocked plugins from GetIt so that they are
 // initialized and wired up.
 Future<void> initializePlugins() {
@@ -118,42 +123,38 @@ Future<void> initializeHiveBoxes() async {
   ]);
 }
 
-/// Starts the app over a database which holds [cards], through the same
-/// `run` the app itself starts with: it resolves the boxes, decides which
-/// screen to open on and calls `runApp`.
-Future<void> startApp(
-  WidgetTester tester, {
-  List<LoyaltyCard> cards = const [],
-  Settings? settings,
-  String? password,
-  bool lockApp = false,
-}) async {
-  await tester.runAsync(
-    () => resetHive(
-      cards: cards,
-      settings: settings ?? faker.settings.settings(),
-      password: password,
-      lockApp: lockApp,
-    ),
-  );
+// clearHiveBoxes empties the boxes again, so a test starts from the database it
+// arranges itself rather than from what the test before it left behind.
+Future<void> clearHiveBoxes() async {
+  await Future.wait([
+    GetIt.I.getAsync<LoyaltyCardsBox>().then((box) => box.clear()),
+    GetIt.I.getAsync<SettingsBox>().then((box) => box.clear()),
+    GetIt.I
+        .getAsync<Box>(instanceName: 'passwordBox')
+        .then((box) => box.clear()),
+  ]);
+}
 
-  // a phone, so the tests see what a user sees: on the default 800x600 test
-  // surface the cards are wider and fewer of them fit.
+/// Sizes the surface like a phone, so the tests see what a user sees: on the
+/// default 800x600 test surface the cards are wider and fewer of them fit, and
+/// what a test reaches for can sit off screen.
+void usePhoneView(WidgetTester tester) {
   tester.view.physicalSize = const Size(1080, 2400);
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-
-  await run();
-  await tester.pumpAndSettle();
 }
 
-/// Starts the app again over the database it left behind, the way a user comes
+/// Builds the app again over the database it left behind, the way a user comes
 /// back to it later.
-Future<void> restartApp(WidgetTester tester) async {
+///
+/// The tree is emptied first: pumping another [Main] over the one which is
+/// there hands the state it already has to the new widget, which is not what a
+/// user coming back to the app gets.
+Future<void> restart(WidgetTester tester, Widget initialScreen) async {
   await tester.pumpWidget(const SizedBox.shrink());
   await tester.pumpAndSettle();
-  await run();
+  await tester.pumpWidget(Main(initialScreen: initialScreen));
   await tester.pumpAndSettle();
 }
 

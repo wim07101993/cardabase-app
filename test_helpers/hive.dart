@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:cardabase/feature/cards/barcode_type_type_adapter.dart';
 import 'package:cardabase/feature/cards/loyalty_card.dart';
-import 'package:cardabase/feature/settings/get_it.dart';
 import 'package:cardabase/feature/settings/model.dart';
 import 'package:cardabase/hive_registrar.g.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -45,29 +44,6 @@ Future<void> openHive() async {
   await Hive.openBox<Settings>(settingsBoxName);
 }
 
-/// Empties the boxes and fills them with what a test wants to start from.
-Future<void> resetHive({
-  List<LoyaltyCard> cards = const [],
-  Settings? settings,
-  String? password,
-  bool lockApp = false,
-}) async {
-  final box = cardsBox();
-  await box.clear();
-  await box.putAll({for (final card in cards) card.id: card});
-
-  final passwords = Hive.box(passwordBoxName);
-  await passwords.clear();
-  if (password != null) {
-    await passwords.put('PW', password);
-    await passwords.put('lock_app', lockApp);
-  }
-
-  final settings0 = Hive.box<Settings>(settingsBoxName);
-  await settings0.clear();
-  await settings0.save(settings ?? const Settings.defaultValue());
-}
-
 /// Closes the boxes and removes everything [openHive] wrote.
 Future<void> closeHive() async {
   await Hive.close();
@@ -89,9 +65,6 @@ List<String> storedCardNames() {
   return storedCards().map((card) => card.name).toList(growable: false);
 }
 
-/// The stored card with the given id, or null when it was removed.
-LoyaltyCard? storedCard(String id) => cardsBox().get(id);
-
 /// Replaces the stored cards, for a test which wants to start from a specific
 /// database without going through the ui.
 Future<void> storeCards(List<LoyaltyCard> cards) async {
@@ -100,39 +73,16 @@ Future<void> storeCards(List<LoyaltyCard> cards) async {
   await box.putAll({for (final card in cards) card.id: card});
 }
 
-/// [storeCards] from inside a widget test.
-///
-/// A widget test runs against a clock of its own, and a write to disk started
-/// under that clock never finishes; [WidgetTester.runAsync] is what lets it run
-/// on the real one.
-Future<void> seedCards(WidgetTester tester, List<LoyaltyCard> cards) async {
-  await tester.runAsync(() => storeCards(cards));
-}
-
-/// The settings box, for a test which wants to read or change settings.
-Box<Settings> settingsBox() => Hive.box<Settings>(settingsBoxName);
-
-/// The settings as they are stored, which is what the app reads them as.
-Settings storedSettings() => settingsBox().value;
-
-/// Saves settings from inside a widget test, on the real clock.
-Future<void> seedSettings(WidgetTester tester, Settings settings) async {
-  await tester.runAsync(() => settingsBox().save(settings));
+/// Empties the boxes, so a test starts from the database it fills itself.
+Future<void> clearHive() async {
+  await cardsBox().clear();
+  await Hive.box(passwordBoxName).clear();
+  await Hive.box<Settings>(settingsBoxName).clear();
 }
 
 /// Opens the boxes for a whole test file and empties them between tests.
-void useHive({
-  List<LoyaltyCard> Function()? cards,
-  Settings Function()? settings,
-  String? password,
-}) {
+void useHive() {
   setUpAll(openHive);
   tearDownAll(closeHive);
-  setUp(
-    () => resetHive(
-      cards: cards?.call() ?? const [],
-      settings: settings?.call(),
-      password: password,
-    ),
-  );
+  setUp(clearHive);
 }

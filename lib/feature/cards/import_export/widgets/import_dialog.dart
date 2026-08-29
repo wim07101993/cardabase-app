@@ -78,7 +78,8 @@ class _ImportDialogState extends State<ImportDialog> {
     }
 
     final path = result.files.single.path!;
-    if (!path.toLowerCase().endsWith('.cdb') && !path.toLowerCase().endsWith('.zip')) {
+    if (!path.toLowerCase().endsWith('.cdb') &&
+        !path.toLowerCase().endsWith('.zip')) {
       GetIt.I<VibrationProvider>().vibrateError();
       if (mounted) {
         showCustomSnackBar(context, 'Please select a CDB file!', false);
@@ -145,8 +146,8 @@ class _ImportDialogState extends State<ImportDialog> {
         ],
       ),
       actions: [
-         _cancelButton(theme),
-         _importButton(theme),
+        _cancelButton(theme),
+        _importButton(theme),
       ],
     );
   }

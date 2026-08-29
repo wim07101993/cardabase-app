@@ -93,8 +93,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
     final passNotifier = ValueNotifier<PasswordStrength?>(null);
 
     return Scaffold(
-      backgroundColor:
-          theme.colorScheme.surface,
+      backgroundColor: theme.colorScheme.surface,
       appBar: CdbAppBar(
         title: 'Password',
         onBackPressed: () => Navigator.pop(context),
@@ -339,15 +338,19 @@ class _PasswordScreenState extends State<PasswordScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 10,),
+                  SizedBox(
+                    height: 10,
+                  ),
                   Divider(
                     color: theme.colorScheme.primary,
                     thickness: 1.0,
                   ),
                   ValueListenableBuilder(
-                    valueListenable: passwordbox.listenable(keys: ['use_biometric']),
+                    valueListenable:
+                        passwordbox.listenable(keys: ['use_biometric']),
                     builder: (context, box, _) {
-                      final useBiometric = box.get('use_biometric', defaultValue: false);
+                      final useBiometric =
+                          box.get('use_biometric', defaultValue: false);
                       return CheckboxListTile(
                         title: Text(
                           'Use biometric authentication',

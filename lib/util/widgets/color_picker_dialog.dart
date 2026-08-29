@@ -31,7 +31,7 @@ class _ColorPickerDialogState extends State<ColorPickerDialog> {
       title: Text(
         'Card Color',
         style: theme.textTheme.bodyLarge
-          ?.copyWith(color: theme.colorScheme.inverseSurface, fontSize: 30),
+            ?.copyWith(color: theme.colorScheme.inverseSurface, fontSize: 30),
       ),
       content: SingleChildScrollView(
         child: ColorPicker(

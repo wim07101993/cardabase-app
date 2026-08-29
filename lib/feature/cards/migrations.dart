@@ -9,16 +9,18 @@ import 'package:hive_ce/hive.dart';
 
 Future<void> runLoyaltyCardMigrations() async {
   final newBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
-  if (newBox.isNotEmpty) {
-    // if there are items in the new box, a migration already ran. No need to
+  if (newBox.isEmpty) {
+    // if there are items in the new box, the migration already ran. No need to
     // run it again.
-    return;
+    final hive = await GetIt.I.getAsync<HiveInterface>();
+    final oldBox = await hive.openBox('mybox');
+    await migrateCardsBoxTo202603(oldBox, newBox);
+    await oldBox.close();
   }
-  final hive = await GetIt.I.getAsync<HiveInterface>();
-  final oldBox = await hive.openBox('mybox');
-  await migrateCardsBoxTo202603(oldBox, newBox);
-  await oldBox.close();
 
+  // the data fixes also run for the boxes which were migrated by an earlier
+  // version: those cards were written before usePoints existed and before the
+  // duplication bug was fixed.
   await _fixDuplicationBugData(newBox);
   await _fixUsePointsData(newBox);
 }
@@ -152,7 +154,7 @@ LoyaltyCard? _mapDynamicToCard(dynamic value) {
   if (value is List) {
     try {
       // ignore: deprecated_member_use_from_same_package
-      return LoyaltyCard.fromLegacyExport('[${value.join(', ')}]');
+      return LoyaltyCard.fromLegacyValueList(value);
     } catch (_) {
       return null;
     }

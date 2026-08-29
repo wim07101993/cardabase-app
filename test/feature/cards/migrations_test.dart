@@ -118,6 +118,86 @@ void main() {
       expect(storedCards().single.barcode.data, validEan13);
     });
 
+    group('a card of the oldest, list-shaped format', () {
+      test('carries its every value over', () async {
+        await oldBox.put('CARDLIST', [
+          ['Legacy Card', validEan13, 0, 79, 155, 'CardType.ean13', true],
+        ]);
+
+        await migrateCardsBoxTo202603(oldBox, cardsBox());
+
+        final card = storedCards().single;
+        expect(card.name, 'Legacy Card');
+        expect(card.barcode.data, validEan13);
+        expect(card.barcode.type, BarcodeType.CodeEAN13);
+        expect(card.color, const Color.fromARGB(255, 0, 79, 155));
+        expect(card.requiresAuth, isTrue);
+      });
+
+      test('keeps a name which contains a comma', () async {
+        await oldBox.put('CARDLIST', [
+          ['Shop 1, Antwerp', validEan13, 0, 79, 155, 'CardType.ean13', false],
+        ]);
+
+        await migrateCardsBoxTo202603(oldBox, cardsBox());
+
+        expect(storedCardNames(), ['Shop 1, Antwerp']);
+        expect(storedCards().single.barcode.data, validEan13);
+      });
+
+      test('keeps the name as it was stored', () async {
+        await oldBox.put('CARDLIST', [
+          [' Legacy Card ', validEan13, 0, 79, 155, 'CardType.ean13', false],
+        ]);
+
+        await migrateCardsBoxTo202603(oldBox, cardsBox());
+
+        expect(storedCardNames(), [' Legacy Card ']);
+      });
+
+      test('is not dropped because its password flag is null', () async {
+        await oldBox.put('CARDLIST', [
+          ['Legacy Card', validEan13, 0, 79, 155, 'CardType.ean13', null],
+        ]);
+
+        await migrateCardsBoxTo202603(oldBox, cardsBox());
+
+        expect(storedCardNames(), ['Legacy Card']);
+        expect(
+          storedCards().single.requiresAuth,
+          isFalse,
+          reason: 'a null password flag is not an enabled password',
+        );
+      });
+
+      test('is kept without a type when its type is null', () async {
+        await oldBox.put('CARDLIST', [
+          ['Legacy Card', validEan13, 0, 79, 155, null, false],
+        ]);
+
+        await migrateCardsBoxTo202603(oldBox, cardsBox());
+
+        expect(storedCardNames(), ['Legacy Card']);
+        expect(storedCards().single.barcode.type, isNull);
+      });
+
+      test('does not take the readable cards down with it', () async {
+        await oldBox.put('CARDLIST', [
+          ['Legacy Card', validEan13, 0, 79, 155, 'CardType.ean13', false],
+          // too few values to be a card
+          ['Half a card', '123'],
+          ['Other Card', otherValidEan13, 1, 2, 3, 'CardType.ean13', true],
+        ]);
+
+        await migrateCardsBoxTo202603(oldBox, cardsBox());
+
+        expect(
+          storedCardNames(),
+          unorderedEquals(['Legacy Card', 'Other Card']),
+        );
+      });
+    });
+
     test('leaves the cards alone when there are already new ones', () async {
       await storeCards([
         faker.loyaltyCards.card().copyWith(name: 'Already migrated'),

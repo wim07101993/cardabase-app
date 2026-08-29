@@ -45,7 +45,6 @@ class _HomePageState extends State<Homepage> {
   @override
   void initState() {
     super.initState();
-    final x = cardsBox.values.toList();
     settingsSubscription = settingsBox.watch().listen((_) {
       settings.loadValue(settingsBox.value);
       setState(() {});
@@ -186,15 +185,33 @@ class _HomePageState extends State<Homepage> {
         ],
         builder: (context) => SafeArea(
           child: CustomScrollView(
-            physics: const BouncingScrollPhysics(
-              decelerationRate: ScrollDecelerationRate.fast,
-            ),
+            physics: cardsBox.isEmpty
+                ? const NeverScrollableScrollPhysics()
+                : const BouncingScrollPhysics(
+                    decelerationRate: ScrollDecelerationRate.fast,
+                  ),
             slivers: [
               SliverAppBar(
-                leading: IconButton(
-                  icon: Icon(Icons.sort, color: theme.colorScheme.secondary),
-                  onPressed: showCardListViewOptionsDialog,
-                ),
+                leading: cardsBox.isEmpty
+                    ? null
+                    : TapRegion(
+                        groupId: 'search_bar',
+                        child: IconButton(
+                          icon: Icon(
+                            isSearchVisible.value
+                                ? Icons.search_off
+                                : Icons.search,
+                            color: theme.colorScheme.secondary,
+                          ),
+                          onPressed: () {
+                            isSearchVisible.value = !isSearchVisible.value;
+                            if (!isSearchVisible.value) {
+                              searchQuery.value = '';
+                              searchController.clear();
+                            }
+                          },
+                        ),
+                      ),
                 actions: [
                   IconButton(
                     icon: Icon(
@@ -204,23 +221,9 @@ class _HomePageState extends State<Homepage> {
                     onPressed: navigateToSettingsScreen,
                   ),
                 ],
-                title: TapRegion(
-                  groupId: 'search_bar',
-                  child: TextButton(
-                    onPressed: cardsBox.isEmpty
-                        ? null
-                        : () {
-                            isSearchVisible.value = !isSearchVisible.value;
-                            if (!isSearchVisible.value) {
-                              searchQuery.value = '';
-                              searchController.clear();
-                            }
-                          },
-                    child: Text(
-                      'Cardabase',
-                      style: theme.textTheme.titleLarge?.copyWith(),
-                    ),
-                  ),
+                title: Text(
+                  'Cardabase',
+                  style: theme.textTheme.titleLarge?.copyWith(),
                 ),
                 centerTitle: true,
                 elevation: 0.0,
@@ -254,56 +257,80 @@ class _HomePageState extends State<Homepage> {
                             }
                           },
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 5,
+                            padding: const EdgeInsets.only(
+                              left: 20,
+                              right: 10,
+                              top: 5,
+                              bottom: 5,
                             ),
-                            child: TextFormField(
-                              controller: searchController,
-                              onChanged: (value) => searchQuery.value = value,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  borderSide: const BorderSide(width: 2.0),
-                                ),
-                                focusColor: theme.colorScheme.primary,
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                labelStyle: theme.textTheme.bodyLarge?.copyWith(
-                                  color: theme.colorScheme.inverseSurface,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 17,
-                                ),
-                                hintText: 'Search cards...',
-                                hintStyle: theme.textTheme.bodyLarge?.copyWith(
-                                  color: theme.colorScheme.tertiary,
-                                ),
-                                prefixIcon: Icon(
-                                  Icons.search,
-                                  color: theme.colorScheme.primary,
-                                ),
-                                suffixIcon: searchQuery.value.isNotEmpty
-                                    ? IconButton(
-                                        icon: Icon(
-                                          Icons.clear,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: searchController,
+                                    onChanged: (value) =>
+                                        searchQuery.value = value,
+                                    decoration: InputDecoration(
+                                      isDense: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                        vertical: 12,
+                                        horizontal: 10,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide:
+                                            const BorderSide(width: 2.0),
+                                      ),
+                                      focusColor: theme.colorScheme.primary,
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
                                           color: theme.colorScheme.primary,
                                         ),
-                                        onPressed: () {
-                                          searchController.clear();
-                                          searchQuery.value = '';
-                                        },
-                                      )
-                                    : null,
-                                filled: false,
-                              ),
-                              style: theme.textTheme.bodyLarge?.copyWith(
-                                color: theme.colorScheme.tertiary,
-                                fontWeight: FontWeight.bold,
-                              ),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      labelStyle:
+                                          theme.textTheme.bodyLarge?.copyWith(
+                                        color: theme.colorScheme.inverseSurface,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 17,
+                                      ),
+                                      hintText: 'Search cards...',
+                                      hintStyle:
+                                          theme.textTheme.bodyLarge?.copyWith(
+                                        color: theme.colorScheme.tertiary,
+                                      ),
+                                      prefixIcon: Icon(
+                                        Icons.search,
+                                        color: theme.colorScheme.primary,
+                                      ),
+                                      suffixIcon: searchQuery.value.isNotEmpty
+                                          ? IconButton(
+                                              icon: Icon(
+                                                Icons.clear,
+                                                color:
+                                                    theme.colorScheme.primary,
+                                              ),
+                                              onPressed: () {
+                                                searchController.clear();
+                                                searchQuery.value = '';
+                                              },
+                                            )
+                                          : null,
+                                      filled: false,
+                                    ),
+                                    style: theme.textTheme.bodyLarge?.copyWith(
+                                      color: theme.colorScheme.tertiary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.sort,
+                                      color: theme.colorScheme.secondary),
+                                  onPressed: showCardListViewOptionsDialog,
+                                ),
+                              ],
                             ),
                           ),
                         )
