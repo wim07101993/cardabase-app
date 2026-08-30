@@ -58,7 +58,8 @@ void testMain() {
       // ASSERT
       expect(find.textContaining('Welcome'), findsWidgets);
 
-      await tapAndSettle(tester, find.text('Continue'));
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
 
       expect(find.text('Cardabase'), findsOneWidget);
       expect(
@@ -90,7 +91,9 @@ void testMain() {
       expect(find.text('Enter your password to continue'), findsOneWidget);
 
       await tester.enterText(find.byType(EditableText), 'letmein');
-      await tapAndSettle(tester, find.text('UNLOCK'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('UNLOCK'));
+      await tester.pumpAndSettle();
 
       expect(find.byType(Homepage), findsOneWidget);
       expect(find.text('Shop 1'), findsOneWidget);
@@ -104,11 +107,15 @@ void testMain() {
       await tester.pumpAndSettle();
 
       // ACT
-      await tapAndSettle(tester, find.byIcon(Icons.add_card));
-      await enterText(tester, 'Card Name', 'Delhaize');
+      await tester.tap(find.byIcon(Icons.add_card));
+      await tester.pumpAndSettle();
+      await tester.enterText(fieldWithLabel('Card Name'), 'Delhaize');
+      await tester.pumpAndSettle();
       await pickBarcodeType(tester, 'EAN-13');
-      await enterText(tester, 'Card ID', validEan13);
-      await tapAndSettle(tester, find.text('SAVE'));
+      await tester.enterText(fieldWithLabel('Card ID'), validEan13);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('SAVE'));
+      await tester.pumpAndSettle();
       expect(find.text('Delhaize'), findsOneWidget);
 
       // the app is built again over the same database, the way a user comes
@@ -132,10 +139,13 @@ void testMain() {
       await tester.pumpAndSettle();
 
       // ACT
-      await tapAndSettle(tester, find.byIcon(Icons.settings));
+      await tester.tap(find.byIcon(Icons.settings));
+      await tester.pumpAndSettle();
       await scrollTo(tester, find.text('Switch Themes'));
-      await tapAndSettle(tester, find.text('Switch Themes'));
-      await tapAndSettle(tester, find.byIcon(Icons.arrow_back_ios_new).first);
+      await tester.tap(find.text('Switch Themes'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.arrow_back_ios_new).first);
+      await tester.pumpAndSettle();
 
       await restart(tester, Homepage());
 

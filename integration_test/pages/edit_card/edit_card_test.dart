@@ -1,4 +1,10 @@
+import 'package:cardabase/feature/cards/edit/widgets/form_fields/barcode_type_selector_button.dart';
+import 'package:cardabase/feature/cards/edit/widgets/form_fields/card_data_form_field.dart';
+import 'package:cardabase/feature/cards/edit/widgets/form_fields/card_name_form_field.dart';
+import 'package:cardabase/feature/cards/edit/widgets/form_fields/notes_form_field.dart';
+import 'package:cardabase/feature/cards/edit/widgets/form_fields/save_button.dart';
 import 'package:cardabase/feature/cards/loyalty_card.dart';
+import 'package:cardabase/feature/cards/widgets/add_card_button.dart';
 import 'package:cardabase/main.dart';
 import 'package:cardabase/pages/home/home_page.dart';
 import 'package:faker/faker.dart';
@@ -24,7 +30,8 @@ void testEditCard() {
     usePhoneView(tester);
     await tester.pumpWidget(Main(initialScreen: Homepage()));
     await tester.pumpAndSettle();
-    await tapAndSettle(tester, find.byIcon(Icons.add_card));
+    await tester.tap(find.byType(AddCardButton));
+    await tester.pumpAndSettle();
   }
 
   group('filling in a card', () {
@@ -33,11 +40,21 @@ void testEditCard() {
       await openNewCardForm(tester);
 
       // ACT
-      await enterText(tester, 'Card Name', 'Delhaize');
-      await pickBarcodeType(tester, 'EAN-13');
-      await enterText(tester, 'Card ID', validEan13);
-      await enterText(tester, 'Some notes...', 'The one on the corner');
-      await tapAndSettle(tester, find.text('SAVE'));
+      await tester.enterText(find.byType(CardNameFormField), 'Delhaize');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(BarcodeTypeSelectorButton));
+      await tester.pumpAndSettle();
+      await tester.scrollToAndTap(find.widgetWithText(ListTile, 'EAN-13'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(CardDataFormField), validEan13);
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(NotesFormField),
+        'The one on the corner',
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(SaveButton));
+      await tester.pumpAndSettle();
 
       // ASSERT
       final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
@@ -53,8 +70,10 @@ void testEditCard() {
       await openNewCardForm(tester);
 
       // ACT
-      await enterText(tester, 'Card Name', 'Delhaize');
-      await tapAndSettle(tester, find.text('SAVE'));
+      await tester.enterText(find.byType(CardNameFormField), 'Delhaize');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(SaveButton));
+      await tester.pumpAndSettle();
 
       // ASSERT
       final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
@@ -70,7 +89,8 @@ void testEditCard() {
       await openNewCardForm(tester);
 
       // ACT
-      await enterText(tester, 'Card Name', 'Delhaize');
+      await tester.enterText(find.byType(CardNameFormField), 'Delhaize');
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(
@@ -85,10 +105,19 @@ void testEditCard() {
       await openNewCardForm(tester);
 
       // ACT
-      await enterText(tester, 'Card Name', 'Loyalty');
-      await pickBarcodeType(tester, 'QR-Code');
-      await enterText(tester, 'Card ID', 'anything goes in a qr code');
-      await tapAndSettle(tester, find.text('SAVE'));
+      await tester.enterText(find.byType(CardNameFormField), 'Loyalty');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(BarcodeTypeSelectorButton));
+      await tester.pumpAndSettle();
+      await tester.scrollToAndTap(find.widgetWithText(ListTile, 'QR-Code'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(CardDataFormField),
+        'anything goes in a qr code',
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(SaveButton));
+      await tester.pumpAndSettle();
 
       // ASSERT
       final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
@@ -108,8 +137,10 @@ void testEditCard() {
       await openNewCardForm(tester);
 
       // ACT
-      await enterText(tester, 'Card Name', '');
-      await tapAndSettle(tester, find.text('SAVE'));
+      await tester.enterText(find.byType(CardNameFormField), '');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(SaveButton));
+      await tester.pumpAndSettle();
 
       // ASSERT
       final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
@@ -123,9 +154,14 @@ void testEditCard() {
       await openNewCardForm(tester);
 
       // ACT
-      await enterText(tester, 'Card Name', 'Delhaize');
-      await pickBarcodeType(tester, 'EAN-13');
-      await tapAndSettle(tester, find.text('SAVE'));
+      await tester.enterText(find.byType(CardNameFormField), 'Delhaize');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(BarcodeTypeSelectorButton));
+      await tester.pumpAndSettle();
+      await tester.scrollToAndTap(find.widgetWithText(ListTile, 'EAN-13'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(SaveButton));
+      await tester.pumpAndSettle();
 
       // ASSERT
       final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
@@ -138,11 +174,17 @@ void testEditCard() {
       await openNewCardForm(tester);
 
       // ACT
-      await enterText(tester, 'Card Name', 'Delhaize');
-      await pickBarcodeType(tester, 'EAN-13');
+      await tester.enterText(find.byType(CardNameFormField), 'Delhaize');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(BarcodeTypeSelectorButton));
+      await tester.pumpAndSettle();
+      await tester.scrollToAndTap(find.widgetWithText(ListTile, 'EAN-13'));
+      await tester.pumpAndSettle();
       // thirteen digits, but the last one does not add up.
-      await enterText(tester, 'Card ID', '9780201379625');
-      await tapAndSettle(tester, find.text('SAVE'));
+      await tester.enterText(find.byType(CardDataFormField), '9780201379625');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(SaveButton));
+      await tester.pumpAndSettle();
 
       // ASSERT
       final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
@@ -155,10 +197,16 @@ void testEditCard() {
       await openNewCardForm(tester);
 
       // ACT
-      await enterText(tester, 'Card Name', 'Delhaize');
-      await pickBarcodeType(tester, 'EAN-13');
-      await enterText(tester, 'Card ID', '123');
-      await tapAndSettle(tester, find.text('SAVE'));
+      await tester.enterText(find.byType(CardNameFormField), 'Delhaize');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(BarcodeTypeSelectorButton));
+      await tester.pumpAndSettle();
+      await tester.scrollToAndTap(find.widgetWithText(ListTile, 'EAN-13'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(CardDataFormField), '123');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(SaveButton));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(find.text('Value must have length 13'), findsOneWidget);
@@ -183,9 +231,12 @@ void testEditCard() {
 
       // ACT
       await openCardMenu(tester, 'Delhaize');
-      await tapAndSettle(tester, find.text('Edit'));
-      await enterText(tester, 'Card Name', 'Delhaize City');
-      await tapAndSettle(tester, find.text('SAVE'));
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
+      await tester.enterText(fieldWithLabel('Card Name'), 'Delhaize City');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(SaveButton));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(
@@ -220,7 +271,8 @@ void testEditCard() {
 
       // ACT
       await openCardMenu(tester, 'Delhaize');
-      await tapAndSettle(tester, find.text('Edit'));
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(fieldText(tester, 'Card Name'), 'Delhaize');
@@ -243,9 +295,12 @@ void testEditCard() {
 
       // ACT
       await openCardMenu(tester, 'Delhaize');
-      await tapAndSettle(tester, find.text('Edit'));
-      await enterText(tester, 'Card Name', 'Something else');
-      await tapAndSettle(tester, find.byIcon(Icons.arrow_back_ios_new).first);
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
+      await tester.enterText(fieldWithLabel('Card Name'), 'Something else');
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.arrow_back_ios_new).first);
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(loyaltyCardsBox.values.map((card) => card.name), ['Delhaize']);

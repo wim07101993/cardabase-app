@@ -41,7 +41,8 @@ void testCardDetailsPage() {
       // ACT
       await tester.pumpWidget(Main(initialScreen: Homepage()));
       await tester.pumpAndSettle();
-      await tapAndSettle(tester, find.text('Delhaize'));
+      await tester.tap(find.text('Delhaize'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(find.text('Delhaize'), findsWidgets);
@@ -68,7 +69,8 @@ void testCardDetailsPage() {
       // ACT
       await tester.pumpWidget(Main(initialScreen: Homepage()));
       await tester.pumpAndSettle();
-      await tapAndSettle(tester, find.text('Delhaize'));
+      await tester.tap(find.text('Delhaize'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(find.text('The one on the corner'), findsOneWidget);
@@ -88,8 +90,10 @@ void testCardDetailsPage() {
       // ACT
       await tester.pumpWidget(Main(initialScreen: Homepage()));
       await tester.pumpAndSettle();
-      await tapAndSettle(tester, find.text('Delhaize'));
-      await tapAndSettle(tester, find.byIcon(Icons.arrow_back_ios_new).first);
+      await tester.tap(find.text('Delhaize'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.arrow_back_ios_new).first);
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(find.text('Cardabase'), findsOneWidget);
@@ -111,8 +115,10 @@ void testCardDetailsPage() {
       // ACT
       await tester.pumpWidget(Main(initialScreen: Homepage()));
       await tester.pumpAndSettle();
-      await tapAndSettle(tester, find.text('Delhaize'));
-      await tapAndSettle(tester, find.byIcon(Icons.qr_code_2));
+      await tester.tap(find.text('Delhaize'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.qr_code_2));
+      await tester.pumpAndSettle();
 
       // ASSERT the card is shared as the json another phone can scan.
       final codes = tester

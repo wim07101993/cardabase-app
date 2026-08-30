@@ -28,11 +28,13 @@ void main() {
   group('the settings', () {
     Future<void> tapSetting(WidgetTester tester, String setting) async {
       await scrollTo(tester, find.text(setting));
-      await tapAndSettle(tester, find.text(setting));
+      await tester.tap(find.text(setting));
+      await tester.pumpAndSettle();
     }
 
     Future<void> openSetting(WidgetTester tester, String setting) async {
-      await tapAndSettle(tester, find.byIcon(Icons.settings));
+      await tester.tap(find.byIcon(Icons.settings));
+      await tester.pumpAndSettle();
       await tapSetting(tester, setting);
     }
 
@@ -45,13 +47,15 @@ void main() {
     /// Opens the restore half of the same page.
     Future<void> openImport(WidgetTester tester) async {
       await openSetting(tester, 'Backup/Restore');
-      await tapAndSettle(tester, find.byIcon(Icons.download));
+      await tester.tap(find.byIcon(Icons.download));
+      await tester.pumpAndSettle();
     }
 
     /// Leaves a settings page which is a screen of its own, back to the list
     /// of settings.
     Future<void> goBack(WidgetTester tester) async {
-      await tapAndSettle(tester, find.byIcon(Icons.arrow_back_ios_new).first);
+      await tester.tap(find.byIcon(Icons.arrow_back_ios_new).first);
+      await tester.pumpAndSettle();
     }
 
     testWidgets('open from the cards and close again', (tester) async {
@@ -61,12 +65,14 @@ void main() {
       // ACT
       await tester.pumpWidget(Main(initialScreen: Homepage()));
       await tester.pumpAndSettle();
-      await tapAndSettle(tester, find.byIcon(Icons.settings));
+      await tester.tap(find.byIcon(Icons.settings));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(find.text('Settings'), findsOneWidget);
 
-      await tapAndSettle(tester, find.byIcon(Icons.arrow_back_ios_new).first);
+      await tester.tap(find.byIcon(Icons.arrow_back_ios_new).first);
+      await tester.pumpAndSettle();
       expect(find.text('Cardabase'), findsOneWidget);
     });
 
@@ -87,7 +93,8 @@ void main() {
       await tester.pumpWidget(Main(initialScreen: Homepage()));
       await tester.pumpAndSettle();
       await openExport(tester);
-      await tapAndSettle(tester, find.text('CLIPBOARD'));
+      await tester.tap(find.text('CLIPBOARD'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(clipboardText, contains('"name":"Delhaize"'));
@@ -109,7 +116,9 @@ void main() {
       await tester.pumpAndSettle();
       await openImport(tester);
       await tester.enterText(find.byType(TextField).last, backup);
-      await tapAndSettle(tester, find.text('IMPORT FROM TEXT'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('IMPORT FROM TEXT'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
@@ -143,20 +152,24 @@ void main() {
 
       // ACT back it up,
       await openExport(tester);
-      await tapAndSettle(tester, find.text('CLIPBOARD'));
+      await tester.tap(find.text('CLIPBOARD'));
+      await tester.pumpAndSettle();
       final backup = clipboardText!;
       await goBack(tester);
 
       // lose the cards -- clearing them closes the settings again,
       await tapSetting(tester, 'Delete Cardabase');
-      await tapAndSettle(tester, find.text('DELETE'));
+      await tester.tap(find.text('DELETE'));
+      await tester.pumpAndSettle();
       expect(loyaltyCardsBox.values, isEmpty);
       expect(find.text('There is nothing to see...'), findsOneWidget);
 
       // and put them back.
       await openImport(tester);
       await tester.enterText(find.byType(TextField).last, backup);
-      await tapAndSettle(tester, find.text('IMPORT FROM TEXT'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('IMPORT FROM TEXT'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(
@@ -180,9 +193,12 @@ void main() {
       await tester.pumpWidget(Main(initialScreen: Homepage()));
       await tester.pumpAndSettle();
       await openSetting(tester, 'Tags');
-      await tapAndSettle(tester, find.byIcon(Icons.add));
+      await tester.tap(find.byIcon(Icons.add));
+      await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField).last, 'groceries');
-      await tapAndSettle(tester, find.text('ADD'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('ADD'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       final settingsBox = await GetIt.I.getAsync<SettingsBox>();
@@ -199,7 +215,8 @@ void main() {
       // ACT
       await tester.pumpWidget(Main(initialScreen: Homepage()));
       await tester.pumpAndSettle();
-      await tapAndSettle(tester, find.byIcon(Icons.settings));
+      await tester.tap(find.byIcon(Icons.settings));
+      await tester.pumpAndSettle();
       await tapSetting(tester, 'Switch Themes');
 
       // ASSERT

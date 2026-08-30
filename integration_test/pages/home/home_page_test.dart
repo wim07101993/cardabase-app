@@ -71,11 +71,15 @@ void testHomePage() {
       final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
 
       // ACT
-      await tapAndSettle(tester, find.byIcon(Icons.add_card));
-      await enterText(tester, 'Card Name', 'Delhaize');
+      await tester.tap(find.byIcon(Icons.add_card));
+      await tester.pumpAndSettle();
+      await tester.enterText(fieldWithLabel('Card Name'), 'Delhaize');
+      await tester.pumpAndSettle();
       await pickBarcodeType(tester, 'EAN-13');
-      await enterText(tester, 'Card ID', barcode);
-      await tapAndSettle(tester, find.text('SAVE'));
+      await tester.enterText(fieldWithLabel('Card ID'), barcode);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('SAVE'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(find.text('Cardabase'), findsOneWidget, reason: 'back on home');
@@ -93,8 +97,10 @@ void testHomePage() {
       final loyaltyCardsBox = await GetIt.I.getAsync<LoyaltyCardsBox>();
 
       // ACT
-      await tapAndSettle(tester, find.byIcon(Icons.add_card));
-      await tapAndSettle(tester, find.text('SAVE'));
+      await tester.tap(find.byIcon(Icons.add_card));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('SAVE'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(loyaltyCardsBox.values, isEmpty);
@@ -117,7 +123,8 @@ void testHomePage() {
 
       // ACT
       await openCardMenu(tester, 'Delhaize');
-      await tapAndSettle(tester, find.text('Duplicate'));
+      await tester.tap(find.text('Duplicate'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       final cards = loyaltyCardsBox.values.toList(growable: false);
@@ -160,7 +167,8 @@ void testHomePage() {
 
       // ACT
       await openCardMenu(tester, 'Delhaize');
-      await tapAndSettle(tester, find.text('Move DOWN'));
+      await tester.tap(find.text('Move DOWN'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(
@@ -195,7 +203,8 @@ void testHomePage() {
       // ACT
       await scrollToCard(tester, 'Colruyt');
       await openCardMenu(tester, 'Colruyt');
-      await tapAndSettle(tester, find.text('Move UP'));
+      await tester.tap(find.text('Move UP'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(
@@ -221,12 +230,14 @@ void testHomePage() {
 
       // ACT
       await openCardMenu(tester, 'Delhaize');
-      await tapAndSettle(tester, find.widgetWithText(ListTile, 'DELETE'));
+      await tester.tap(find.widgetWithText(ListTile, 'DELETE'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(find.text('Delete Card'), findsOneWidget);
       expect(find.textContaining('Delhaize'), findsWidgets);
-      await tapAndSettle(tester, find.widgetWithText(OutlinedButton, 'DELETE'));
+      await tester.tap(find.widgetWithText(OutlinedButton, 'DELETE'));
+      await tester.pumpAndSettle();
 
       expect(find.text('Delhaize'), findsNothing);
       expect(loyaltyCardsBox.values.map((card) => card.name), ['Colruyt']);
@@ -247,7 +258,8 @@ void testHomePage() {
 
       // ACT
       await openCardMenu(tester, 'Delhaize');
-      await tapAndSettle(tester, find.text('Edit'));
+      await tester.tap(find.text('Edit'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(fieldText(tester, 'Card Name'), 'Delhaize');
@@ -289,11 +301,16 @@ void testHomePage() {
       // ACT
       // the sort button lives in the search row, which the search icon
       // in the app bar opens.
-      await tapAndSettle(tester, find.byIcon(Icons.search));
-      await tapAndSettle(tester, find.byIcon(Icons.sort));
-      await tapAndSettle(tester, find.byType(DropdownMenu<SortingStyle>));
-      await tapAndSettle(tester, find.text('Name 0-Z').last);
-      await tapAndSettle(tester, find.text('SELECT'));
+      await tester.tap(find.byIcon(Icons.search));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.sort));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(DropdownMenu<SortingStyle>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Name 0-Z').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('SELECT'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(
@@ -321,12 +338,15 @@ void testHomePage() {
       // ACT
       // the sort button lives in the search row, which the search icon
       // in the app bar opens.
-      await tapAndSettle(tester, find.byIcon(Icons.search));
-      await tapAndSettle(tester, find.byIcon(Icons.sort));
+      await tester.tap(find.byIcon(Icons.search));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.sort));
+      await tester.pumpAndSettle();
       expect(find.text('Columns: 1'), findsOneWidget);
       await tester.drag(find.byType(Slider), const Offset(200, 0));
       await tester.pumpAndSettle();
-      await tapAndSettle(tester, find.text('SELECT'));
+      await tester.tap(find.text('SELECT'));
+      await tester.pumpAndSettle();
 
       // ASSERT
       final settingsBox = await GetIt.I.getAsync<SettingsBox>();

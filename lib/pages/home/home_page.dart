@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:cardabase/data/unique_id.dart';
 import 'package:cardabase/feature/cards/card_list_view_options.dart';
 import 'package:cardabase/feature/cards/edit/widgets/edit_card_page.dart';
 import 'package:cardabase/feature/cards/loyalty_card.dart';
+import 'package:cardabase/feature/cards/widgets/add_card_button.dart';
 import 'package:cardabase/feature/cards/widgets/card_list.dart';
 import 'package:cardabase/feature/settings/get_it.dart';
 import 'package:cardabase/feature/settings/model.dart';
@@ -13,7 +13,6 @@ import 'package:cardabase/pages/home/password_challenge_dialog.dart';
 import 'package:cardabase/pages/welcome_screen.dart';
 import 'package:cardabase/util/widgets/multi_listenable_builder.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bounceable/flutter_bounceable.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
@@ -84,17 +83,6 @@ class _HomePageState extends State<Homepage> {
           query.isEmpty || card.name.toLowerCase().contains(query);
       return matchesTag && matchesSearch;
     }).toList(growable: false);
-  }
-
-  Future<void> addCard() {
-    return Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (builder) => EditCardPage(
-          cardId: generateUniqueId(),
-        ),
-      ),
-    );
   }
 
   Future<void> moveCard(int oldIndex, int newIndex) {
@@ -169,7 +157,7 @@ class _HomePageState extends State<Homepage> {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      floatingActionButton: _addCardButton(),
+      floatingActionButton: const AddCardButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: MultiListenableBuilder(
         listenables: [
@@ -326,8 +314,10 @@ class _HomePageState extends State<Homepage> {
                                   ),
                                 ),
                                 IconButton(
-                                  icon: Icon(Icons.sort,
-                                      color: theme.colorScheme.secondary),
+                                  icon: Icon(
+                                    Icons.sort,
+                                    color: theme.colorScheme.secondary,
+                                  ),
                                   onPressed: showCardListViewOptionsDialog,
                                 ),
                               ],
@@ -355,25 +345,6 @@ class _HomePageState extends State<Homepage> {
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _addCardButton() {
-    return Bounceable(
-      onTap: () {},
-      child: SizedBox(
-        height: 70,
-        width: 70,
-        child: FittedBox(
-          child: FloatingActionButton(
-            elevation: 0.0,
-            enableFeedback: true,
-            tooltip: 'Add a card',
-            onPressed: addCard,
-            child: const Icon(Icons.add_card),
           ),
         ),
       ),

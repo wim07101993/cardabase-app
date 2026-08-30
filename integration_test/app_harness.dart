@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cardabase/feature/cards/edit/widgets/form_fields/barcode_type_selector_button.dart';
 import 'package:cardabase/feature/cards/loyalty_card.dart';
 import 'package:cardabase/feature/cards/widgets/card_summary.dart';
 import 'package:cardabase/feature/settings/model.dart';
@@ -158,48 +157,9 @@ Future<void> restart(WidgetTester tester, Widget initialScreen) async {
   await tester.pumpAndSettle();
 }
 
-/// Scrolls until [finder] is on screen, whichever way it has to go.
-Future<void> scrollTo(
-  WidgetTester tester,
-  Finder finder, {
-  Finder? scrollable,
-}) async {
-  final list = scrollable ?? find.byType(Scrollable).first;
-
-  // back to the top first: `scrollUntilVisible` only ever scrolls one way, and
-  // a list which is already past what the test is looking for would scroll
-  // away from it forever.
-  final position = tester.state<ScrollableState>(list).position;
-  if (position.pixels != position.minScrollExtent) {
-    position.jumpTo(position.minScrollExtent);
-    await tester.pumpAndSettle();
-  }
-
-  try {
-    await tester.scrollUntilVisible(finder, 200, scrollable: list);
-  } on StateError {
-    // `scrollUntilVisible` gives up with a bare "Bad state: No element", which
-    // says nothing about what was being looked for.
-    fail('scrolled the whole list without finding $finder');
-  }
-  await tester.ensureVisible(finder);
-  await tester.pumpAndSettle();
-}
-
-/// Scrolls the card list until the card with [name] is on screen.
-Future<void> scrollToCard(WidgetTester tester, String name) {
-  return scrollTo(tester, find.text(name));
-}
-
 /// Opens the menu of a card, the one a long press brings up.
 Future<void> openCardMenu(WidgetTester tester, String name) async {
   await tester.longPress(find.text(name));
-  await tester.pumpAndSettle();
-}
-
-/// Taps something in a menu or a dialog and waits for it to close.
-Future<void> tapAndSettle(WidgetTester tester, Finder finder) async {
-  await tester.tap(finder);
   await tester.pumpAndSettle();
 }
 
@@ -214,31 +174,9 @@ Finder fieldWithLabel(String label) {
   );
 }
 
-/// Fills the field which carries [label] and settles the frame.
-Future<void> enterText(
-  WidgetTester tester,
-  String label,
-  String text,
-) async {
-  await tester.enterText(fieldWithLabel(label), text);
-  await tester.pumpAndSettle();
-}
-
 /// What is in the field which carries [label].
 String fieldText(WidgetTester tester, String label) {
   return tester.widget<EditableText>(fieldWithLabel(label)).controller.text;
-}
-
-/// Picks a barcode type in the edit form, through the button which shows the
-/// one which is set (or 'None' while a new card has none).
-Future<void> pickBarcodeType(WidgetTester tester, String label) async {
-  await tapAndSettle(tester, find.byType(BarcodeTypeSelectorButton));
-  await scrollTo(
-    tester,
-    find.widgetWithText(ListTile, label),
-    scrollable: find.byType(Scrollable).last,
-  );
-  await tapAndSettle(tester, find.widgetWithText(ListTile, label));
 }
 
 /// The ids of the cards on screen, in the order they are shown in.
@@ -264,4 +202,37 @@ String? snackBarText(WidgetTester tester) {
       .map((text) => text.data)
       .whereType<String>();
   return texts.isEmpty ? null : texts.join();
+}
+
+extension WidgetTesterExtensions on WidgetTester {
+  Future<void> scrollTo(
+    Finder finder, {
+    Finder? scrollable,
+  }) async {
+    final list = scrollable ?? find.byType(Scrollable).first;
+
+    // back to the top first: `scrollUntilVisible` only ever scrolls one way, and
+    // a list which is already past what the test is looking for would scroll
+    // away from it forever.
+    final position = state<ScrollableState>(list).position;
+    if (position.pixels != position.minScrollExtent) {
+      position.jumpTo(position.minScrollExtent);
+      await pumpAndSettle();
+    }
+
+    try {
+      await scrollUntilVisible(finder, 200, scrollable: list);
+    } on StateError {
+      // `scrollUntilVisible` gives up with a bare "Bad state: No element", which
+      // says nothing about what was being looked for.
+      fail('scrolled the whole list without finding $finder');
+    }
+    await ensureVisible(finder);
+    await pumpAndSettle();
+  }
+
+  Future<void> scrollToAndTap(Finder finder) async {
+    await scrollTo(finder);
+    await tap(finder);
+  }
 }
