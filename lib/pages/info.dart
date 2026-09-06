@@ -242,16 +242,10 @@ class _InfoScreenState extends State<InfoScreen> {
                                   icon: const Icon(Icons.refresh),
                                   label: const Text('Retry'),
                                   style: OutlinedButton.styleFrom(
-                                    side: BorderSide(
-                                      color: theme.colorScheme.primary,
-                                      width: 2,
-                                    ),
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 40,
                                       vertical: 15,
                                     ),
-                                    backgroundColor: Colors.transparent,
-                                    elevation: 0.0,
                                     shape: const RoundedRectangleBorder(
                                       borderRadius:
                                           BorderRadius.all(Radius.circular(15)),
@@ -286,16 +280,10 @@ class _InfoScreenState extends State<InfoScreen> {
                                       onPressed: () =>
                                           _launchUrl(_githubReleasesUrl),
                                       style: OutlinedButton.styleFrom(
-                                        side: BorderSide(
-                                          color: theme.colorScheme.primary,
-                                          width: 2,
-                                        ),
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 40,
                                           vertical: 15,
                                         ),
-                                        backgroundColor: Colors.transparent,
-                                        elevation: 0.0,
                                         shape: const RoundedRectangleBorder(
                                           borderRadius: BorderRadius.only(
                                             topLeft: Radius.circular(15),
@@ -326,16 +314,10 @@ class _InfoScreenState extends State<InfoScreen> {
                                         'https://f-droid.org/en/packages/com.georgeyt9769.cardabase/',
                                       ),
                                       style: OutlinedButton.styleFrom(
-                                        side: BorderSide(
-                                          color: theme.colorScheme.primary,
-                                          width: 2,
-                                        ),
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 40,
                                           vertical: 15,
                                         ),
-                                        backgroundColor: Colors.transparent,
-                                        elevation: 0.0,
                                         shape: const RoundedRectangleBorder(
                                           borderRadius: BorderRadius.only(
                                             bottomLeft: Radius.circular(15),
@@ -441,22 +423,7 @@ class _InfoScreenState extends State<InfoScreen> {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  style: OutlinedButton.styleFrom(
-                    elevation: 0.0,
-                    side: BorderSide(
-                        color: theme.colorScheme.primary, width: 2.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(11),
-                    ),
-                  ),
-                  child: Text(
-                    'Close',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                      color: theme.colorScheme.tertiary,
-                    ),
-                  ),
+                  child: const Text('Close'),
                 ),
               ),
             ],

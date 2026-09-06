@@ -7,6 +7,7 @@ import 'package:cardabase/feature/cards/loyalty_card.dart';
 import 'package:cardabase/feature/settings/editable_model.dart';
 import 'package:cardabase/feature/settings/get_it.dart';
 import 'package:cardabase/feature/settings/model.dart';
+import 'package:cardabase/theme/theme.dart';
 import 'package:cardabase/util/vibration_provider.dart';
 import 'package:cardabase/util/widgets/cdb_app_bar_sliver.dart';
 import 'package:cardabase/util/widgets/custom_snack_bar.dart';
@@ -219,8 +220,8 @@ class _ImportExportPageState extends State<ImportExportPage>
               child: TabBar(
                 controller: _tabController,
                 tabs: const [
-                  Tab(icon: Icon(Icons.upload)),
-                  Tab(icon: Icon(Icons.download)),
+                  Tab(icon: Icon(Icons.upload), text: 'Backup'),
+                  Tab(icon: Icon(Icons.download), text: 'Restore'),
                 ],
                 labelColor: theme.colorScheme.primary,
                 unselectedLabelColor: theme.colorScheme.tertiary,
@@ -248,31 +249,17 @@ class _ImportExportPageState extends State<ImportExportPage>
           TextField(
             controller: importTextController,
             maxLines: 8,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText:
                   'This action will rewrite existing cards!\n\nPaste your Cardabase JSON here:',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: theme.colorScheme.primary),
-              ),
             ),
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.tertiary,
-              fontWeight: FontWeight.bold,
-            ),
+            style: theme.inputTextStyle,
           ),
           const SizedBox(height: 20),
           OutlinedButton(
             onPressed: onImportTextClicked,
             style: OutlinedButton.styleFrom(
               minimumSize: const Size(double.infinity, 50),
-              side: BorderSide(color: theme.colorScheme.primary, width: 2),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(11),
-              ),
             ),
             child: const Text('IMPORT FROM TEXT'),
           ),
@@ -373,14 +360,6 @@ class _ImportExportPageState extends State<ImportExportPage>
         labelText: 'Custom Export Path',
         hintText: Settings.defaultCardExportDirectoryPath,
         isDense: true,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(11),
-          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(11),
-          borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
-        ),
         suffixIcon: IconButton(
           icon: const Icon(Icons.clear, size: 18),
           onPressed: () {
@@ -405,7 +384,7 @@ class _ImportExportPageState extends State<ImportExportPage>
               _autoBackupSettings.isEnabled.value = val;
               saveAutoBackupSettings();
             },
-            activeColor: theme.colorScheme.primary,
+            activeThumbColor: theme.colorScheme.primary,
           ),
           if (isEnabled) ...[
             const SizedBox(height: 10),
@@ -448,7 +427,7 @@ class _ImportExportPageState extends State<ImportExportPage>
       width: double.infinity,
       height: 48,
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Stack(
@@ -468,7 +447,7 @@ class _ImportExportPageState extends State<ImportExportPage>
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),

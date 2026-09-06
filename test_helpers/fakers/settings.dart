@@ -93,6 +93,7 @@ class SettingsFaker {
         effect: faker.randomGenerator.element(LoyaltyCardEffect.values),
       ),
       rightBackButton: faker.randomGenerator.boolean(),
+      advancedTextures: faker.randomGenerator.boolean(),
     );
   }
 

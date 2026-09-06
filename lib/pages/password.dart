@@ -1,3 +1,4 @@
+import 'package:cardabase/theme/theme.dart';
 import 'package:cardabase/util/vibration_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
@@ -128,23 +129,8 @@ class _PasswordScreenState extends State<PasswordScreen> {
                   TextFormField(
                     controller: password,
                     decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(width: 2.0),
-                      ),
-                      focusColor: theme.colorScheme.primary,
-                      enabledBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: theme.colorScheme.primary),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
                       labelText: 'Password',
-                      labelStyle: theme.textTheme.bodyLarge
-                          ?.copyWith(color: theme.colorScheme.secondary),
-                      prefixIcon: Icon(
-                        Icons.password,
-                        color: theme.colorScheme.secondary,
-                      ),
+                      prefixIcon: Icon(Icons.password),
                       suffixIcon: IconButton(
                         icon: Icon(
                           hidePassword
@@ -155,10 +141,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                         onPressed: showPasswordFunc,
                       ),
                     ),
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.tertiary,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: theme.inputTextStyle,
                     keyboardType: TextInputType.visiblePassword,
                     obscureText: hidePassword,
                     onChanged: (value) {
@@ -170,24 +153,8 @@ class _PasswordScreenState extends State<PasswordScreen> {
                   TextFormField(
                     controller: confirmPassword,
                     decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(width: 2.0),
-                      ),
-                      focusColor: theme.colorScheme.primary,
-                      enabledBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: theme.colorScheme.primary),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
                       labelText: 'Password again',
-                      labelStyle: theme.textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.secondary,
-                      ),
-                      prefixIcon: Icon(
-                        Icons.password,
-                        color: theme.colorScheme.secondary,
-                      ),
+                      prefixIcon: Icon(Icons.password),
                       suffixIcon: IconButton(
                         icon: Icon(
                           hideConfirmPassword
@@ -221,26 +188,9 @@ class _PasswordScreenState extends State<PasswordScreen> {
                     child: SizedBox(
                       height: 70,
                       child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.all(15),
-                          side: BorderSide(
-                            color: theme.colorScheme.primary,
-                          ),
-                          backgroundColor: Colors.transparent,
-                          elevation: 0.0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          minimumSize: const Size.fromHeight(100),
-                        ),
+                        style: theme.tileButtonStyle(),
                         onPressed: () => setPasswordFunc(theme),
-                        child: Text(
-                          'SET',
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: theme.colorScheme.inverseSurface,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: const Text('SET'),
                       ),
                     ),
                   ),
@@ -275,23 +225,10 @@ class _PasswordScreenState extends State<PasswordScreen> {
                   TextFormField(
                     controller: resetPassword,
                     decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(width: 2.0),
-                      ),
-                      focusColor: theme.colorScheme.primary,
-                      enabledBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: theme.colorScheme.primary),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
                       labelText: 'Password',
                       labelStyle: theme.textTheme.bodyLarge
                           ?.copyWith(color: theme.colorScheme.inverseSurface),
-                      prefixIcon: Icon(
-                        Icons.password,
-                        color: theme.colorScheme.secondary,
-                      ),
+                      prefixIcon: Icon(Icons.password),
                       suffixIcon: IconButton(
                         icon: Icon(
                           hidePassword
@@ -315,36 +252,14 @@ class _PasswordScreenState extends State<PasswordScreen> {
                     child: SizedBox(
                       height: 70,
                       child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.all(15),
-                          side: BorderSide(
-                            color: theme.colorScheme.primary,
-                          ),
-                          backgroundColor: Colors.transparent,
-                          elevation: 0.0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          minimumSize: const Size.fromHeight(100),
-                        ),
+                        style: theme.tileButtonStyle(),
                         onPressed: () => resetPasswordFunc(theme),
-                        child: Text(
-                          'RESET',
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            color: theme.colorScheme.inverseSurface,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: const Text('RESET'),
                       ),
                     ),
                   ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  Divider(
-                    color: theme.colorScheme.primary,
-                    thickness: 1.0,
-                  ),
+                  SizedBox(height: 10,),
+                  const Divider(),
                   ValueListenableBuilder(
                     valueListenable:
                         passwordbox.listenable(keys: ['use_biometric']),

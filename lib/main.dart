@@ -15,6 +15,7 @@ import 'package:cardabase/pages/info.dart';
 import 'package:cardabase/pages/lock_screen.dart';
 import 'package:cardabase/pages/welcome_screen.dart';
 import 'package:cardabase/theme/theme.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
@@ -160,15 +161,25 @@ class Main extends StatefulWidget {
 
 class _MainState extends State<Main> {
   static const QuickActions quickActions = QuickActions();
+
+  /// Sharing intents and home screen quick actions only have an implementation
+  /// on Android and iOS. Calling them elsewhere (e.g. the desktop builds) only
+  /// throws [MissingPluginException]s.
+  static bool get _supportsMobileIntegrations =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
+
   String shortcut = 'nothing set';
-  late StreamSubscription _intentDataStreamSubscription;
+  StreamSubscription? _intentDataStreamSubscription;
 
   @override
   void initState() {
     super.initState();
 
-    _intentDataStreamSubscription =
-        ReceiveSharingIntent.instance.getMediaStream().listen((value) {
+    if (!_supportsMobileIntegrations) return;
+
+    _intentDataStreamSubscription = ReceiveSharingIntent.instance.getMediaStream().listen((value) {
       _handleSharedMedia(value);
     });
 
@@ -210,50 +221,12 @@ class _MainState extends State<Main> {
     ]);
   }
 
-  Widget _cancelButton(BuildContext context, ThemeData theme) {
+  Widget _dialogButton(BuildContext context, String label, bool result) {
     return Bounceable(
       onTap: () {},
       child: OutlinedButton(
-        onPressed: () => Navigator.pop(context, false),
-        style: OutlinedButton.styleFrom(
-          elevation: 0.0,
-          side: BorderSide(color: theme.colorScheme.primary, width: 2.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(11),
-          ),
-        ),
-        child: Text(
-          'Cancel',
-          style: theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-            color: theme.colorScheme.tertiary,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _importButton(BuildContext context, ThemeData theme) {
-    return Bounceable(
-      onTap: () {},
-      child: OutlinedButton(
-        onPressed: () => Navigator.pop(context, true),
-        style: OutlinedButton.styleFrom(
-          elevation: 0.0,
-          side: BorderSide(color: theme.colorScheme.primary, width: 2.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(11),
-          ),
-        ),
-        child: Text(
-          'Import',
-          style: theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-            color: theme.colorScheme.tertiary,
-          ),
-        ),
+        onPressed: () => Navigator.pop(context, result),
+        child: Text(label),
       ),
     );
   }
@@ -272,8 +245,8 @@ class _MainState extends State<Main> {
           content: const Text(
               'This will overwrite your current cards and settings.'),
           actions: [
-            _cancelButton(dialogContext, Theme.of(dialogContext)),
-            _importButton(dialogContext, Theme.of(dialogContext)),
+            _dialogButton(dialogContext, 'Cancel', false),
+            _dialogButton(dialogContext, 'Import', true),
           ],
         ),
       );
@@ -314,7 +287,7 @@ class _MainState extends State<Main> {
 
   @override
   void dispose() {
-    _intentDataStreamSubscription.cancel();
+    _intentDataStreamSubscription?.cancel();
     super.dispose();
   }
 
