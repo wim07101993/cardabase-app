@@ -111,7 +111,10 @@ void testMain() {
       await tester.pumpAndSettle();
       await tester.enterText(fieldWithLabel('Card Name'), 'Delhaize');
       await tester.pumpAndSettle();
-      await pickBarcodeType(tester, 'EAN-13');
+      await tester.tap(find.text('Card Type'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, 'EAN-13'));
+      await tester.pumpAndSettle();
       await tester.enterText(fieldWithLabel('Card ID'), validEan13);
       await tester.pumpAndSettle();
       await tester.tap(find.text('SAVE'));
@@ -141,7 +144,6 @@ void testMain() {
       // ACT
       await tester.tap(find.byIcon(Icons.settings));
       await tester.pumpAndSettle();
-      await scrollTo(tester, find.text('Switch Themes'));
       await tester.tap(find.text('Switch Themes'));
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.arrow_back_ios_new).first);

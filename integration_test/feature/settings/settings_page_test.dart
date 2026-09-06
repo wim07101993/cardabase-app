@@ -27,7 +27,8 @@ void main() {
 
   group('the settings', () {
     Future<void> tapSetting(WidgetTester tester, String setting) async {
-      await scrollTo(tester, find.text(setting));
+      await tester.scrollUntilVisible(find.text(setting), 200);
+      await tester.pumpAndSettle();
       await tester.tap(find.text(setting));
       await tester.pumpAndSettle();
     }

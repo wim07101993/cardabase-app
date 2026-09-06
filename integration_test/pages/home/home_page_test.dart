@@ -54,7 +54,8 @@ void testHomePage() {
 
       // ASSERT
       expect(find.text('Delhaize'), findsOneWidget);
-      await scrollToCard(tester, 'Colruyt');
+      await tester.scrollUntilVisible(find.text('Colruyt'), 200);
+      await tester.pumpAndSettle();
       expect(find.text('Colruyt'), findsOneWidget);
       expect(find.text('There is nothing to see...'), findsNothing);
     });
@@ -75,7 +76,10 @@ void testHomePage() {
       await tester.pumpAndSettle();
       await tester.enterText(fieldWithLabel('Card Name'), 'Delhaize');
       await tester.pumpAndSettle();
-      await pickBarcodeType(tester, 'EAN-13');
+      await tester.tap(find.text('Card Type'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(ListTile, 'EAN-13'));
+      await tester.pumpAndSettle();
       await tester.enterText(fieldWithLabel('Card ID'), barcode);
       await tester.pumpAndSettle();
       await tester.tap(find.text('SAVE'));
@@ -201,7 +205,8 @@ void testHomePage() {
       await tester.pumpAndSettle();
 
       // ACT
-      await scrollToCard(tester, 'Colruyt');
+      await tester.scrollUntilVisible(find.text('Colruyt'), 200);
+      await tester.pumpAndSettle();
       await openCardMenu(tester, 'Colruyt');
       await tester.tap(find.text('Move UP'));
       await tester.pumpAndSettle();
